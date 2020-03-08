@@ -1,0 +1,11 @@
+py37:
+  image: python:3.7
+  script:
+  - pip install tox
+  - tox -e py37
+
+py38:
+  image: python:3.8
+  script:
+  - pip install tox
+  - tox -e format,mypy,py38,pep8,package,manifest
