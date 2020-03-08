@@ -4,7 +4,13 @@ from quart import Quart, ResponseReturnValue
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
-    AuthenticatedUser, AuthManager, current_user, DEFAULTS, login_required, login_user, logout_user
+    AuthenticatedUser,
+    AuthManager,
+    current_user,
+    DEFAULTS,
+    login_required,
+    login_user,
+    logout_user,
 )
 
 
@@ -50,7 +56,7 @@ async def test_auth(app: Quart) -> None:
     headers = Headers()
     headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
     async with app.test_request_context("/", headers=headers):
-        assert (await current_user.is_authenticated)
+        assert await current_user.is_authenticated
         assert current_user.auth_id == "1"
 
 
