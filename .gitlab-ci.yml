@@ -8,4 +8,4 @@ py38:
   image: python:3.8
   script:
   - pip install tox
-  - tox -e format,mypy,py38,pep8,package,manifest
+  - tox -e format,mypy,py38,pep8,package
