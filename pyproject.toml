@@ -42,7 +42,7 @@ order_by_type = false
 reverse_relative = true
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.7"
 quart = ">=0.11"
 
 [tool.poetry.dev-dependencies]
