@@ -4,8 +4,8 @@ from quart import Quart, ResponseReturnValue
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
-    AuthenticatedUser,
     AuthManager,
+    AuthUser,
     current_user,
     DEFAULTS,
     login_required,
@@ -30,7 +30,7 @@ def _app() -> Quart:
 
     @app.route("/login")
     async def login() -> ResponseReturnValue:
-        login_user(AuthenticatedUser("2"))
+        login_user(AuthUser("2"))
         return "login"
 
     @app.route("/logout")

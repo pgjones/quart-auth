@@ -53,6 +53,8 @@ authenticated users,
 
 .. code-block:: python
 
+    from quart_auth import login_required
+
     @app.route("/")
     @login_required
     async def restricted_route():
@@ -63,12 +65,14 @@ start and end sessions for a specific ``AuthenticatedUser`` instance,
 
 .. code-block:: python
 
+    from quart_auth import AuthUser, login_user, logout_user
+
     @app.route("/login")
     async def login():
         # Check Credentials here, e.g. username & password.
         ...
         # We'll assume the user has an identifying ID equal to 2
-        login_user(AuthenticatedUser(2))
+        login_user(AuthUser(2))
         ...
 
     @app.route("/logout")
@@ -85,9 +89,9 @@ good example of this is loading user data from a database,
 .. code-block:: python
 
     from quart import Quart
-    from quart_auth import AuthenticatedUser, AuthManager, current_user, login_required
+    from quart_auth import AuthUser, AuthManager, current_user, login_required
 
-    class User(AuthenticatedUser):
+    class User(AuthUser):
         def __init__(self, auth_id):
             super().__init__(auth_id)
             self._resolved = False

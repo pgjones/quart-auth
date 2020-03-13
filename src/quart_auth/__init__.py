@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import wraps
@@ -33,39 +32,16 @@ class Action(Enum):
     WRITE_PERMANENT = auto()
 
 
-class UserABC(ABC):
-    """An abstract base class for users.
+class AuthUser:
+    """A base class for users.
 
     Any specific user implementation used with Quart-Auth should
-    inherit from this and implement the abstract methods.
+    inherit from this.
     """
 
-    action = Action.PASS
-
-    @property
-    @abstractmethod
-    def auth_id(self) -> Optional[str]:
-        pass
-
-    @property
-    @abstractmethod
-    async def is_authenticated(self) -> bool:
-        pass
-
-
-class AnonymousUser(UserABC):
-    @property
-    def auth_id(self) -> Optional[str]:
-        return None
-
-    @property
-    async def is_authenticated(self) -> bool:
-        return False
-
-
-class AuthenticatedUser(UserABC):
-    def __init__(self, auth_id: str) -> None:
+    def __init__(self, auth_id: Optional[str]) -> None:
         self._auth_id = auth_id
+        self.action = Action.PASS
 
     @property
     def auth_id(self) -> Optional[str]:
@@ -73,12 +49,11 @@ class AuthenticatedUser(UserABC):
 
     @property
     async def is_authenticated(self) -> bool:
-        return True
+        return self._auth_id is not None
 
 
 class AuthManager:
-    anonymous_user_class = AnonymousUser
-    user_class = AuthenticatedUser
+    user_class = AuthUser
 
     def __init__(self, app: Optional[Quart] = None) -> None:
         if app is not None:
@@ -88,13 +63,10 @@ class AuthManager:
         app.auth_manager = self  # type: ignore
         app.after_request(self.after_request)
 
-    def resolve_user(self) -> UserABC:
+    def resolve_user(self) -> AuthUser:
         auth_id = self.load_cookie()
 
-        if auth_id is not None:
-            return self.user_class(auth_id)
-        else:
-            return self.anonymous_user_class()
+        return self.user_class(auth_id)
 
     def load_cookie(self) -> Optional[str]:
         try:
@@ -167,7 +139,7 @@ def login_required(func: Callable) -> Callable:
     return wrapper
 
 
-def login_user(user: AuthenticatedUser, remember: bool = False) -> None:
+def login_user(user: AuthUser, remember: bool = False) -> None:
     """Use this to start a session with the authenticated *user*.
 
     This will result in `current_user` resolving to the `user`.
@@ -188,12 +160,12 @@ def login_user(user: AuthenticatedUser, remember: bool = False) -> None:
 
 def logout_user() -> None:
     """Use this to end the session of the current_user."""
-    user = current_app.auth_manager.anonymous_user_class()
-    user.action = Action.DELETE  # type: ignore
+    user = current_app.auth_manager.user_class(None)
+    user.action = Action.DELETE
     setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
 
-def _load_user() -> Optional[UserABC]:
+def _load_user() -> Optional[AuthUser]:
     if has_request_context() and not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
         user = current_app.auth_manager.resolve_user()
         setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
@@ -201,7 +173,7 @@ def _load_user() -> Optional[UserABC]:
     return getattr(
         _request_ctx_stack.top,
         QUART_AUTH_USER_ATTRIBUTE,
-        current_app.auth_manager.anonymous_user_class(),
+        current_app.auth_manager.user_class(None),
     )
 
 
