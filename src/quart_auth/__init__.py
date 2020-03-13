@@ -188,7 +188,9 @@ def login_user(user: AuthenticatedUser, remember: bool = False) -> None:
 
 def logout_user() -> None:
     """Use this to end the session of the current_user."""
-    current_user.action = Action.DELETE  # type: ignore
+    user = current_app.auth_manager.anonymous_user_class()
+    user.action = Action.DELETE  # type: ignore
+    setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
 
 def _load_user() -> Optional[UserABC]:
