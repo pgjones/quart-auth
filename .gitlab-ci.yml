@@ -14,7 +14,6 @@ pages:
   image: python:3.8
   script:
   - pip install . sphinx pydata-sphinx-theme
-  - python setup.py install
   - rm -rf docs/source && sphinx-apidoc -e -f -o docs/reference/source/ src/quart-auth/
   - cd docs/ && make html && cd ../
   - mv docs/_build/html/ public/
