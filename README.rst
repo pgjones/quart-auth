@@ -80,6 +80,18 @@ start and end sessions for a specific ``AuthenticatedUser`` instance,
         logout_user()
         ...
 
+The user (authenticated or not) is available via the global
+``current_user`` including within templates,
+
+.. code-block:: python
+
+    from quart import render_template_string
+    from quart_auth import current_user
+
+    @app.route("/")
+    async def user():
+        return await render_template_string("{{ current_user.is_authenticated }}")
+
 Contributing
 ------------
 

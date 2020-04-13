@@ -1,6 +1,6 @@
 import pytest
 from itsdangerous import URLSafeSerializer
-from quart import Quart, ResponseReturnValue
+from quart import Quart, render_template_string, ResponseReturnValue
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
@@ -27,6 +27,11 @@ def _app() -> Quart:
     @login_required
     async def auth() -> ResponseReturnValue:
         return "auth"
+
+    @app.route("/templating")
+    @login_required
+    async def templating() -> ResponseReturnValue:
+        return await render_template_string("Hello {{ current_user.auth_id }}")
 
     @app.route("/login")
     async def login() -> ResponseReturnValue:
@@ -58,6 +63,14 @@ async def test_auth(app: Quart) -> None:
     async with app.test_request_context("/", headers=headers):
         assert await current_user.is_authenticated
         assert current_user.auth_id == "1"
+
+
+@pytest.mark.asyncio
+async def test_templating(app: Quart) -> None:
+    test_client = app.test_client()
+    await test_client.get("/login")
+    response = await test_client.get("/templating")
+    assert (await response.get_data()) == b"Hello 2"  # type: ignore
 
 
 @pytest.mark.asyncio

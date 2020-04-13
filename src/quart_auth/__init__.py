@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import wraps
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Dict, Optional
 
 from itsdangerous import BadSignature, URLSafeSerializer
 from quart import current_app, has_request_context, Quart, request, Response
@@ -62,6 +62,7 @@ class AuthManager:
     def init_app(self, app: Quart) -> None:
         app.auth_manager = self  # type: ignore
         app.after_request(self.after_request)
+        app.context_processor(_template_context)
 
     def resolve_user(self) -> AuthUser:
         auth_id = self.load_cookie()
@@ -165,7 +166,7 @@ def logout_user() -> None:
     setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
 
-def _load_user() -> Optional[AuthUser]:
+def _load_user() -> AuthUser:
     if has_request_context() and not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
         user = current_app.auth_manager.resolve_user()
         setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
@@ -179,3 +180,7 @@ def _load_user() -> Optional[AuthUser]:
 
 def _get_config_or_default(config_key: str) -> Any:
     return current_app.config.get(config_key, DEFAULTS[config_key])
+
+
+def _template_context() -> Dict[str, AuthUser]:
+    return {"current_user": _load_user()}

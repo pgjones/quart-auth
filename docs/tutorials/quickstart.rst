@@ -12,7 +12,7 @@ in users.
 
 .. code-block:: python
 
-    from quart import Quart
+    from quart import Quart, render_template_string
     from quart_auth import (
         AuthUser, current_user, login_required, login_user, logout_user
     )
@@ -40,3 +40,13 @@ in users.
     async def restricted_route():
         current_user.auth_id  # Will be 2 given the login_user code above
         ...
+
+    @app.route("/hello")
+    async def hello():
+        return await render_template_string("""
+        {% if current_user.is_authenticated %}
+          Hello logged in user
+        {% else %}
+          Hello logged out user
+        {% endif %}
+        """)
