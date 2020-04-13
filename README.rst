@@ -1,7 +1,7 @@
 Quart-Auth
 ==========
 
-|Build Status| |pypi| |python| |license|
+|Build Status| |docs| |pypi| |python| |license|
 
 Quart-Auth is an extension for `Quart
 <https://gitlab.com/pgjones/quart>`_ to provide for secure cookie
@@ -80,84 +80,6 @@ start and end sessions for a specific ``AuthenticatedUser`` instance,
         logout_user()
         ...
 
-Extending Quart-Auth
---------------------
-
-Quart-Auth is meant to be extended, much like Quart (and Flask), a
-good example of this is loading user data from a database,
-
-.. code-block:: python
-
-    from quart import Quart
-    from quart_auth import AuthUser, AuthManager, current_user, login_required
-
-    class User(AuthUser):
-        def __init__(self, auth_id):
-            super().__init__(auth_id)
-            self._resolved = False
-            self._email = None
-
-        async def _resolve(self):
-            if not self._resolved:
-                self._email = await db.fetch_email(self.auth_id)
-                self._resolved = True
-
-        @property
-        async def email(self):
-            await self._resolve()
-            return self._email
-
-    auth_manager = AuthManager()
-    auth_manager.user_class = User
-
-    app = Quart(__name__)
-
-    @app.route("/")
-    @login_required
-    async def index():
-        return await current_user.email
-
-    auth_manager.init_app(app)
-
-.. note::
-
-    If you are used to Flask-Login you are likely expecting the
-    current_user to be fully loaded without the extra resolve
-    step. This is not possible in Quart-Auth as the ``current_user``
-    is loaded synchronously whereas the User is assumed to be loaded
-    asynchronously i.e. ``await current_user.email`` is preferred over
-    ``(await current_user).email``.
-
-Auth ID
-~~~~~~~
-
-Quart-Auth authenticates using a ``str``, ``auth_id``, which can be
-set to the User ID. It is better not use the user's ID in case the
-user's session is compromised e.g. via a stolen phone, as the
-``auth_id`` itself most be revoked to disable the session.
-
-Configuration
--------------
-
-The following configuration options are used by Quart-Auth,
-
-============================ ============================= ===================
-Configuration key            type                          default
----------------------------- ----------------------------- -------------------
-QUART_AUTH_COOKIE_DOMAIN     Optional[str]                 None
-QUART_AUTH_COOKIE_NAME       str                           QUART_AUTH
-QUART_AUTH_COOKIE_PATH       str                           /
-QUART_AUTH_COOKIE_HTTP_ONLY  bool                          True
-QUART_AUTH_COOKIE_SAMESITE   Union[None, "Strict", "Lax"]  Strict
-QUART_AUTH_COOKIE_SECURE     bool                          True
-QUART_AUTH_DURATION          int                           365 * 24 * 60 * 60
-QUART_AUTH_SALT              str                           quart auth salt
-============================ ============================= ===================
-
-The ``COOKIE`` related options refer directly to standard cookie
-options. In development it is likely that you'll need to set
-``QUART_AUTH_COOKIE_SECURE`` to ``False``.
-
 Contributing
 ------------
 
@@ -188,6 +110,9 @@ This README is the best place to start, after that try opening an
 
 .. |Build Status| image:: https://gitlab.com/pgjones/quart-auth/badges/master/pipeline.svg
    :target: https://gitlab.com/pgjones/quart-auth/commits/master
+
+.. |docs| image:: https://img.shields.io/badge/docs-passing-brightgreen.svg
+   :target: https://pgjones.gitlab.io/quart-auth/
 
 .. |pypi| image:: https://img.shields.io/pypi/v/quart-auth.svg
    :target: https://pypi.python.org/pypi/Quart-Auth/
