@@ -25,9 +25,6 @@ repository = "https://gitlab.com/pgjones/quart-auth/"
 line-length = 100
 target-version = ["py37"]
 
-[tool.check-manifest]
-ignore = "tox.ini"
-
 [tool.isort]
 dont_skip = ["__init__.py"]
 combine_as_imports = true
