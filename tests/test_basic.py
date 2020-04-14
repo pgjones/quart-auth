@@ -1,6 +1,6 @@
 import pytest
 from itsdangerous import URLSafeSerializer
-from quart import Quart, render_template_string, ResponseReturnValue
+from quart import Quart, redirect, render_template_string, ResponseReturnValue, url_for
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
@@ -11,6 +11,7 @@ from quart_auth import (
     login_required,
     login_user,
     logout_user,
+    Unauthorized,
 )
 
 
@@ -42,6 +43,10 @@ def _app() -> Quart:
     async def logout() -> ResponseReturnValue:
         logout_user()
         return "logout"
+
+    @app.errorhandler(Unauthorized)
+    async def redirect_to_login(*_: Exception) -> ResponseReturnValue:
+        return redirect(url_for("login"))
 
     AuthManager(app)
     return app
@@ -77,7 +82,7 @@ async def test_templating(app: Quart) -> None:
 async def test_login_required(app: Quart) -> None:
     test_client = app.test_client()
     response = await test_client.get("/auth")
-    assert response.status_code == 401
+    assert response.status_code == 302
 
     serializer = URLSafeSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
     token = serializer.dumps(1)
@@ -96,4 +101,12 @@ async def test_login_logout(app: Quart) -> None:
     assert response.status_code == 200
     await test_client.get("/logout")
     response = await test_client.get("/auth")
-    assert response.status_code == 401
+    assert response.status_code == 302
+
+
+@pytest.mark.asyncio
+async def test_redirect(app: Quart) -> None:
+    test_client = app.test_client()
+    response = await test_client.get("/auth")
+    assert response.status_code == 302
+    assert response.headers["location"] == "/login"

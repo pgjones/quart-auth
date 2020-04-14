@@ -7,3 +7,4 @@ How to guides
 
    configuration.rst
    extending.rst
+   redirect_to_login.rst

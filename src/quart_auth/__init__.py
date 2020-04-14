@@ -5,7 +5,7 @@ from typing import Any, Callable, Dict, Optional
 
 from itsdangerous import BadSignature, URLSafeSerializer
 from quart import current_app, has_request_context, Quart, request, Response
-from quart.exceptions import Unauthorized
+from quart.exceptions import Unauthorized as QuartUnauthorized
 from quart.globals import _request_ctx_stack
 from quart.local import LocalProxy
 
@@ -23,6 +23,10 @@ DEFAULTS = {
 
 
 current_user = LocalProxy(lambda: _load_user())
+
+
+class Unauthorized(QuartUnauthorized):
+    pass
 
 
 class Action(Enum):
