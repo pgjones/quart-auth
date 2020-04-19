@@ -17,16 +17,16 @@
 
 # -- Project information -----------------------------------------------------
 
-import pkg_resources
 import os
 import sys
+from importlib.metadata import version as imp_version
 sys.path.insert(0, os.path.abspath('../'))
 
 
 project = 'Quart-Auth'
 copyright = '2020, Philip Jones'
 author = 'Philip Jones'
-version = pkg_resources.get_distribution("quart-auth").version
+version = imp_version("quart-auth")
 release = version
 
 # -- General configuration ---------------------------------------------------
