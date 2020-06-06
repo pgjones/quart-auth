@@ -60,6 +60,15 @@ authenticated users,
     async def restricted_route():
         ...
 
+If no user is logged in, an ``Unauthorized`` exception is raised. To catch it,
+install an error handler,
+
+.. code-block:: python
+
+    @app.errorhandler(Unauthorized)
+    async def redirect_to_login(*_: Exception) -> ResponseReturnValue:
+        return redirect(url_for("login"))
+
 You can also use the ``login_user``, and ``logout_user`` functions to
 start and end sessions for a specific ``AuthenticatedUser`` instance,
 
