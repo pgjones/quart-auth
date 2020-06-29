@@ -110,3 +110,10 @@ async def test_redirect(app: Quart) -> None:
     response = await test_client.get("/auth")
     assert response.status_code == 302
     assert response.headers["location"] == "/login"
+
+
+@pytest.mark.asyncio
+async def test_login_cookie(app: Quart) -> None:
+    test_client = app.test_client()
+    await test_client.get("/login")
+    assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"
