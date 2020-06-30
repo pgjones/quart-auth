@@ -89,7 +89,10 @@ class AuthManager:
 
     def after_request(self, response: Response) -> Response:
         if current_user.action == Action.DELETE:
-            response.delete_cookie(_get_config_or_default("QUART_AUTH_COOKIE_NAME"))
+            response.delete_cookie(
+                _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
+                domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
+            )
         elif current_user.action in {Action.WRITE, Action.WRITE_PERMANENT}:
             expires = None
             if current_user.action == Action.WRITE_PERMANENT:
