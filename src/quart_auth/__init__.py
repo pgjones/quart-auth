@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import wraps
+from hashlib import sha512
 from typing import Any, Callable, Dict, Optional
 
 from itsdangerous import BadSignature, URLSafeSerializer
@@ -34,6 +35,11 @@ class Action(Enum):
     PASS = auto()
     WRITE = auto()
     WRITE_PERMANENT = auto()
+
+
+class _AuthSerializer(URLSafeSerializer):
+    def __init__(self, secret: str, salt: str) -> None:
+        super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
 
 class AuthUser:
@@ -79,8 +85,8 @@ class AuthManager:
         except KeyError:
             return None
         else:
-            serializer = URLSafeSerializer(
-                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT")
+            serializer = _AuthSerializer(
+                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT"),
             )
             try:
                 return serializer.loads(token)
@@ -100,8 +106,8 @@ class AuthManager:
                     seconds=_get_config_or_default("QUART_AUTH_DURATION")
                 )
 
-            serializer = URLSafeSerializer(
-                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT")
+            serializer = _AuthSerializer(
+                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT"),
             )
             token = serializer.dumps(current_user.auth_id)
             response.set_cookie(

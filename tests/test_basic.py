@@ -1,9 +1,9 @@
 import pytest
-from itsdangerous import URLSafeSerializer
 from quart import Quart, redirect, render_template_string, ResponseReturnValue, url_for
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
+    _AuthSerializer,
     AuthManager,
     AuthUser,
     current_user,
@@ -61,7 +61,7 @@ async def test_no_auth(app: Quart) -> None:
 
 @pytest.mark.asyncio
 async def test_auth(app: Quart) -> None:
-    serializer = URLSafeSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
+    serializer = _AuthSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
     token = serializer.dumps("1")
     headers = Headers()
     headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
@@ -84,7 +84,7 @@ async def test_login_required(app: Quart) -> None:
     response = await test_client.get("/auth")
     assert response.status_code == 302
 
-    serializer = URLSafeSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
+    serializer = _AuthSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
     token = serializer.dumps(1)
     headers = Headers()
     headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
