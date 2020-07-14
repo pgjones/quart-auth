@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from enum import auto, Enum
 from functools import wraps
 from hashlib import sha512
@@ -100,11 +99,9 @@ class AuthManager:
                 domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
             )
         elif current_user.action in {Action.WRITE, Action.WRITE_PERMANENT}:
-            expires = None
+            max_age = None
             if current_user.action == Action.WRITE_PERMANENT:
-                expires = datetime.utcnow() + timedelta(
-                    seconds=_get_config_or_default("QUART_AUTH_DURATION")
-                )
+                max_age = _get_config_or_default("QUART_AUTH_DURATION")
 
             serializer = _AuthSerializer(
                 current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT"),
@@ -114,7 +111,7 @@ class AuthManager:
                 _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
                 token,
                 domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
-                expires=expires,
+                max_age=max_age,
                 httponly=_get_config_or_default("QUART_AUTH_COOKIE_HTTP_ONLY"),
                 path=_get_config_or_default("QUART_AUTH_COOKIE_PATH"),
                 secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE"),
