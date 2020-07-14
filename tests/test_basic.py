@@ -11,6 +11,7 @@ from quart_auth import (
     login_required,
     login_user,
     logout_user,
+    renew_login,
     Unauthorized,
 )
 
@@ -38,6 +39,11 @@ def _app() -> Quart:
     async def login() -> ResponseReturnValue:
         login_user(AuthUser("2"))
         return "login"
+
+    @app.route("/renew")
+    async def renew() -> ResponseReturnValue:
+        renew_login()
+        return "renew"
 
     @app.route("/logout")
     async def logout() -> ResponseReturnValue:
@@ -117,3 +123,12 @@ async def test_login_cookie(app: Quart) -> None:
     test_client = app.test_client()
     await test_client.get("/login")
     assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"
+
+
+@pytest.mark.asyncio
+async def test_renew_login(app: Quart) -> None:
+    test_client = app.test_client()
+    await test_client.get("/login")
+    assert next(cookie for cookie in test_client.cookie_jar).expires is None
+    await test_client.get("/renew")
+    assert next(cookie for cookie in test_client.cookie_jar).expires is not None

@@ -176,6 +176,11 @@ def logout_user() -> None:
     setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
 
+def renew_login() -> None:
+    """Use this to renew the cookie (a new max age)."""
+    current_user.action = Action.WRITE_PERMANENT  # type: ignore
+
+
 def _load_user() -> AuthUser:
     if has_request_context() and not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
         user = current_app.auth_manager.resolve_user()
