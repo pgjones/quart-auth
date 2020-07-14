@@ -97,6 +97,10 @@ class AuthManager:
             response.delete_cookie(
                 _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
                 domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
+                httponly=_get_config_or_default("QUART_AUTH_COOKIE_HTTP_ONLY"),
+                path=_get_config_or_default("QUART_AUTH_COOKIE_PATH"),
+                secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE"),
+                samesite=_get_config_or_default("QUART_AUTH_COOKIE_SAMESITE"),
             )
         elif current_user.action in {Action.WRITE, Action.WRITE_PERMANENT}:
             max_age = None
