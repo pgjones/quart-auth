@@ -85,7 +85,8 @@ class AuthManager:
             return None
         else:
             serializer = _AuthSerializer(
-                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT"),
+                current_app.secret_key,
+                _get_config_or_default("QUART_AUTH_SALT"),
             )
             try:
                 return serializer.loads(token)
@@ -108,7 +109,8 @@ class AuthManager:
                 max_age = _get_config_or_default("QUART_AUTH_DURATION")
 
             serializer = _AuthSerializer(
-                current_app.secret_key, _get_config_or_default("QUART_AUTH_SALT"),
+                current_app.secret_key,
+                _get_config_or_default("QUART_AUTH_SALT"),
             )
             token = serializer.dumps(current_user.auth_id)
             response.set_cookie(
