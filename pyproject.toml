@@ -45,6 +45,10 @@ quart = ">=0.13"
 [tool.poetry.dev-dependencies]
 tox = "*"
 
+[tool.pytest.ini_options]
+addopts = "--no-cov-on-fail --showlocals --strict"
+testpaths = ["tests"]
+
 [build-system]
 requires = ["poetry>=0.12"]
 build-backend = "poetry.masonry.api"
