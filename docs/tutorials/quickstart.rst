@@ -14,7 +14,7 @@ in users.
 
     from quart import Quart, render_template_string
     from quart_auth import (
-        AuthUser, current_user, login_required, login_user, logout_user
+        AuthUser, AuthManager, current_user, login_required, login_user, logout_user
     )
 
     app = Quart(__name__)
