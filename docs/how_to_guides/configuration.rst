@@ -14,7 +14,7 @@ QUART_AUTH_COOKIE_DOMAIN     Optional[str]                 None
 QUART_AUTH_COOKIE_NAME       str                           QUART_AUTH
 QUART_AUTH_COOKIE_PATH       str                           /
 QUART_AUTH_COOKIE_HTTP_ONLY  bool                          True
-QUART_AUTH_COOKIE_SAMESITE   Union[None, "Strict", "Lax"]  Strict
+QUART_AUTH_COOKIE_SAMESITE   Union[None, "Strict", "Lax"]  Lax
 QUART_AUTH_COOKIE_SECURE     bool                          True
 QUART_AUTH_DURATION          int                           365 * 24 * 60 * 60
 QUART_AUTH_SALT              str                           quart auth salt
