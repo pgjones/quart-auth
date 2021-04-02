@@ -52,6 +52,7 @@ in users.
         """)
 
     @app.websocket("/ws")
+    @login_required
     async def ws():
-         await websocket.send(f"Hello current_user.auth_id")
+         await websocket.send(f"Hello {current_user.auth_id}")
          ...
