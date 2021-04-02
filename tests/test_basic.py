@@ -1,5 +1,5 @@
 import pytest
-from quart import Quart, redirect, render_template_string, ResponseReturnValue, url_for
+from quart import Quart, redirect, render_template_string, ResponseReturnValue, url_for, websocket
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
@@ -39,6 +39,12 @@ def _app() -> Quart:
     async def login() -> ResponseReturnValue:
         login_user(AuthUser("2"))
         return "login"
+
+    @app.websocket("/ws")
+    @login_required
+    async def ws() -> None:
+        data = await websocket.receive()
+        await websocket.send(f"{data} {current_user.auth_id}")
 
     @app.route("/renew")
     async def renew() -> ResponseReturnValue:
@@ -132,3 +138,12 @@ async def test_renew_login(app: Quart) -> None:
     assert next(cookie for cookie in test_client.cookie_jar).expires is None
     await test_client.get("/renew")
     assert next(cookie for cookie in test_client.cookie_jar).expires is not None
+
+
+@pytest.mark.asyncio
+async def test_websocket_login(app: Quart) -> None:
+    test_client = app.test_client()
+    await test_client.get("/login")
+    async with test_client.websocket("/ws") as ws:
+        await ws.send("Hello")
+        assert (await ws.receive()) == "Hello 2"

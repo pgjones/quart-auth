@@ -12,7 +12,7 @@ in users.
 
 .. code-block:: python
 
-    from quart import Quart, render_template_string
+    from quart import Quart, render_template_string, websocket
     from quart_auth import (
         AuthUser, AuthManager, current_user, login_required, login_user, logout_user
     )
@@ -50,3 +50,8 @@ in users.
           Hello logged out user
         {% endif %}
         """)
+
+    @app.websocket("/ws")
+    async def ws():
+         await websocket.send(f"Hello current_user.auth_id")
+         ...

@@ -1,12 +1,21 @@
+import warnings
 from enum import auto, Enum
 from functools import wraps
 from hashlib import sha512
 from typing import Any, Callable, Dict, Optional
 
 from itsdangerous import BadSignature, URLSafeSerializer
-from quart import current_app, has_request_context, Quart, request, Response
+from quart import (
+    current_app,
+    has_request_context,
+    has_websocket_context,
+    Quart,
+    request,
+    Response,
+    websocket,
+)
 from quart.exceptions import Unauthorized as QuartUnauthorized
-from quart.globals import _request_ctx_stack
+from quart.globals import _request_ctx_stack, _websocket_ctx_stack
 from quart.local import LocalProxy
 
 QUART_AUTH_USER_ATTRIBUTE = "_quart_auth_user"
@@ -71,6 +80,7 @@ class AuthManager:
     def init_app(self, app: Quart) -> None:
         app.auth_manager = self  # type: ignore
         app.after_request(self.after_request)
+        app.after_websocket(self.after_websocket)
         app.context_processor(_template_context)
 
     def resolve_user(self) -> AuthUser:
@@ -80,7 +90,11 @@ class AuthManager:
 
     def load_cookie(self) -> Optional[str]:
         try:
-            token = request.cookies[_get_config_or_default("QUART_AUTH_COOKIE_NAME")]
+            token = ""
+            if has_request_context():
+                token = request.cookies[_get_config_or_default("QUART_AUTH_COOKIE_NAME")]
+            elif has_websocket_context():
+                token = websocket.cookies[_get_config_or_default("QUART_AUTH_COOKIE_NAME")]
         except KeyError:
             return None
         else:
@@ -123,6 +137,18 @@ class AuthManager:
                 secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE"),
                 samesite=_get_config_or_default("QUART_AUTH_COOKIE_SAMESITE"),
             )
+        return response
+
+    def after_websocket(self, response: Optional[Response]) -> Optional[Response]:
+        if current_user.action != Action.PASS:
+            if response is not None:
+                warnings.warn(
+                    "The auth cookie may not be set by the client. "
+                    "Cookies are unreliably set on websocket responses."
+                )
+            else:
+                warnings.warn("The auth cookie cannot be set by the client.")
+
         return response
 
 
@@ -172,14 +198,20 @@ def login_user(user: AuthUser, remember: bool = False) -> None:
         user.action = Action.WRITE_PERMANENT
     else:
         user.action = Action.WRITE
-    setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+    if has_request_context():
+        setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+    else:
+        raise RuntimeError("Cannot login unless within a request context")
 
 
 def logout_user() -> None:
     """Use this to end the session of the current_user."""
     user = current_app.auth_manager.user_class(None)
     user.action = Action.DELETE
-    setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+    if has_request_context():
+        setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+    else:
+        raise RuntimeError("Cannot logout unless within a request context")
 
 
 def renew_login() -> None:
@@ -188,15 +220,28 @@ def renew_login() -> None:
 
 
 def _load_user() -> AuthUser:
-    if has_request_context() and not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
-        user = current_app.auth_manager.resolve_user()
-        setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+    if has_request_context():
+        if not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
+            user = current_app.auth_manager.resolve_user()
+            setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
-    return getattr(
-        _request_ctx_stack.top,
-        QUART_AUTH_USER_ATTRIBUTE,
-        current_app.auth_manager.user_class(None),
-    )
+        return getattr(
+            _request_ctx_stack.top,
+            QUART_AUTH_USER_ATTRIBUTE,
+            current_app.auth_manager.user_class(None),
+        )
+    elif has_websocket_context():
+        if not hasattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
+            user = current_app.auth_manager.resolve_user()
+            setattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+
+        return getattr(
+            _websocket_ctx_stack.top,
+            QUART_AUTH_USER_ATTRIBUTE,
+            current_app.auth_manager.user_class(None),
+        )
+    else:
+        return current_app.auth_manager.user_class(None)
 
 
 def _get_config_or_default(config_key: str) -> Any:

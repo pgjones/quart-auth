@@ -7,3 +7,4 @@ Discussions
 
    design_choices.rst
    resolving.rst
+   websocket.rst
