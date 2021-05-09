@@ -211,7 +211,7 @@ def login_required(func: Callable) -> Callable:
         if not await current_user.is_authenticated:
             raise Unauthorized()
         else:
-            return await func(*args, **kwargs)
+            return await current_app.ensure_async(func)(*args, **kwargs)
 
     return wrapper
 
