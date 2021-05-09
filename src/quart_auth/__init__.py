@@ -14,9 +14,9 @@ from quart import (
     Response,
     websocket,
 )
-from quart.exceptions import Unauthorized as QuartUnauthorized
 from quart.globals import _request_ctx_stack, _websocket_ctx_stack
-from quart.local import LocalProxy
+from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
+from werkzeug.local import LocalProxy
 
 QUART_AUTH_USER_ATTRIBUTE = "_quart_auth_user"
 DEFAULTS = {
@@ -31,10 +31,10 @@ DEFAULTS = {
 }
 
 
-current_user = LocalProxy(lambda: _load_user())
+current_user: "AuthUser" = LocalProxy(lambda: _load_user())  # type: ignore
 
 
-class Unauthorized(QuartUnauthorized):
+class Unauthorized(WerkzeugUnauthorized):
     pass
 
 
@@ -206,7 +206,7 @@ def login_user(user: AuthUser, remember: bool = False) -> None:
 
 def logout_user() -> None:
     """Use this to end the session of the current_user."""
-    user = current_app.auth_manager.user_class(None)
+    user = current_app.auth_manager.user_class(None)  # type: ignore
     user.action = Action.DELETE
     if has_request_context():
         setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
@@ -216,32 +216,32 @@ def logout_user() -> None:
 
 def renew_login() -> None:
     """Use this to renew the cookie (a new max age)."""
-    current_user.action = Action.WRITE_PERMANENT  # type: ignore
+    current_user.action = Action.WRITE_PERMANENT
 
 
 def _load_user() -> AuthUser:
     if has_request_context():
         if not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
-            user = current_app.auth_manager.resolve_user()
+            user = current_app.auth_manager.resolve_user()  # type: ignore
             setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
             _request_ctx_stack.top,
             QUART_AUTH_USER_ATTRIBUTE,
-            current_app.auth_manager.user_class(None),
+            current_app.auth_manager.user_class(None),  # type: ignore
         )
     elif has_websocket_context():
         if not hasattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
-            user = current_app.auth_manager.resolve_user()
+            user = current_app.auth_manager.resolve_user()  # type: ignore
             setattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
             _websocket_ctx_stack.top,
             QUART_AUTH_USER_ATTRIBUTE,
-            current_app.auth_manager.user_class(None),
+            current_app.auth_manager.user_class(None),  # type: ignore
         )
     else:
-        return current_app.auth_manager.user_class(None)
+        return current_app.auth_manager.user_class(None)  # type: ignore
 
 
 def _get_config_or_default(config_key: str) -> Any:

@@ -128,16 +128,16 @@ async def test_redirect(app: Quart) -> None:
 async def test_login_cookie(app: Quart) -> None:
     test_client = app.test_client()
     await test_client.get("/login")
-    assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"
+    assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"  # type: ignore
 
 
 @pytest.mark.asyncio
 async def test_renew_login(app: Quart) -> None:
     test_client = app.test_client()
     await test_client.get("/login")
-    assert next(cookie for cookie in test_client.cookie_jar).expires is None
+    assert next(cookie for cookie in test_client.cookie_jar).expires is None  # type: ignore
     await test_client.get("/renew")
-    assert next(cookie for cookie in test_client.cookie_jar).expires is not None
+    assert next(cookie for cookie in test_client.cookie_jar).expires is not None  # type: ignore
 
 
 @pytest.mark.asyncio

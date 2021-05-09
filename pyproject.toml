@@ -40,7 +40,7 @@ reverse_relative = true
 
 [tool.poetry.dependencies]
 python = ">=3.7"
-quart = ">=0.13"
+quart = ">=0.15"
 
 [tool.poetry.dev-dependencies]
 tox = "*"
