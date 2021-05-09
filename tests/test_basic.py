@@ -83,11 +83,21 @@ async def test_auth(app: Quart) -> None:
 
 
 @pytest.mark.asyncio
+async def test_testing(app: Quart) -> None:
+    test_client = app.test_client()
+    async with test_client.authenticated("22"):  # type: ignore
+        response = await test_client.get("/templating")
+        assert (await response.get_data()) == b"Hello 22"  # type: ignore
+    response = await test_client.get("/templating")
+    assert response.status_code == 302
+
+
+@pytest.mark.asyncio
 async def test_templating(app: Quart) -> None:
     test_client = app.test_client()
-    await test_client.get("/login")
-    response = await test_client.get("/templating")
-    assert (await response.get_data()) == b"Hello 2"  # type: ignore
+    async with test_client.authenticated("2"):  # type: ignore
+        response = await test_client.get("/templating")
+        assert (await response.get_data()) == b"Hello 2"  # type: ignore
 
 
 @pytest.mark.asyncio
@@ -96,13 +106,9 @@ async def test_login_required(app: Quart) -> None:
     response = await test_client.get("/auth")
     assert response.status_code == 302
 
-    serializer = _AuthSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
-    token = serializer.dumps(1)
-    headers = Headers()
-    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
-
-    response = await test_client.get("/auth", headers=headers)
-    assert response.status_code == 200
+    async with test_client.authenticated("1"):  # type: ignore
+        response = await test_client.get("/auth")
+        assert response.status_code == 200
 
 
 @pytest.mark.asyncio
@@ -128,16 +134,16 @@ async def test_redirect(app: Quart) -> None:
 async def test_login_cookie(app: Quart) -> None:
     test_client = app.test_client()
     await test_client.get("/login")
-    assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"  # type: ignore
+    assert next(cookie for cookie in test_client.cookie_jar).name == "QUART_AUTH"
 
 
 @pytest.mark.asyncio
 async def test_renew_login(app: Quart) -> None:
     test_client = app.test_client()
     await test_client.get("/login")
-    assert next(cookie for cookie in test_client.cookie_jar).expires is None  # type: ignore
+    assert next(cookie for cookie in test_client.cookie_jar).expires is None
     await test_client.get("/renew")
-    assert next(cookie for cookie in test_client.cookie_jar).expires is not None  # type: ignore
+    assert next(cookie for cookie in test_client.cookie_jar).expires is not None
 
 
 @pytest.mark.asyncio

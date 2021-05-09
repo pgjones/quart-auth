@@ -1,8 +1,10 @@
 import warnings
+from contextlib import asynccontextmanager
 from enum import auto, Enum
 from functools import wraps
 from hashlib import sha512
-from typing import Any, Callable, Dict, Optional
+from types import new_class
+from typing import Any, AsyncGenerator, Callable, Dict, Optional
 
 from itsdangerous import BadSignature, URLSafeSerializer
 from quart import (
@@ -15,6 +17,7 @@ from quart import (
     websocket,
 )
 from quart.globals import _request_ctx_stack, _websocket_ctx_stack
+from quart.typing import TestClientProtocol
 from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
 from werkzeug.local import LocalProxy
 
@@ -50,6 +53,36 @@ class _AuthSerializer(URLSafeSerializer):
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
 
+class TestClientMixin:
+    @asynccontextmanager
+    async def authenticated(self: TestClientProtocol, auth_id: str) -> AsyncGenerator[None, None]:
+        if self.cookie_jar is None:
+            raise RuntimeError("Authenticated transactions only make sense with cookies enabled.")
+
+        serializer = _AuthSerializer(
+            self.app.secret_key,
+            _get_config_or_default("QUART_AUTH_SALT", self.app),
+        )
+        token = serializer.dumps(auth_id)
+        self.set_cookie(
+            _get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
+            _get_config_or_default("QUART_AUTH_COOKIE_NAME", self.app),
+            token,
+            path=_get_config_or_default("QUART_AUTH_COOKIE_PATH", self.app),
+            domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
+            secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE", self.app),
+            httponly=_get_config_or_default("QUART_AUTH_COOKIE_HTTP_ONLY", self.app),
+            samesite=_get_config_or_default("QUART_AUTH_COOKIE_SAMESITE", self.app),
+        )
+        yield
+        self.delete_cookie(
+            _get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
+            _get_config_or_default("QUART_AUTH_COOKIE_NAME", self.app),
+            path=_get_config_or_default("QUART_AUTH_COOKIE_PATH", self.app),
+            domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
+        )
+
+
 class AuthUser:
     """A base class for users.
 
@@ -82,6 +115,7 @@ class AuthManager:
         app.after_request(self.after_request)
         app.after_websocket(self.after_websocket)
         app.context_processor(_template_context)
+        app.test_client_class = new_class("TestClient", (TestClientMixin, app.test_client_class))
 
     def resolve_user(self) -> AuthUser:
         auth_id = self.load_cookie()
@@ -244,8 +278,10 @@ def _load_user() -> AuthUser:
         return current_app.auth_manager.user_class(None)  # type: ignore
 
 
-def _get_config_or_default(config_key: str) -> Any:
-    return current_app.config.get(config_key, DEFAULTS[config_key])
+def _get_config_or_default(config_key: str, app: Optional[Quart] = None) -> Any:
+    if app is None:
+        app = current_app
+    return app.config.get(config_key, DEFAULTS[config_key])
 
 
 def _template_context() -> Dict[str, AuthUser]:

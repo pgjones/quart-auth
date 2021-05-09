@@ -9,3 +9,4 @@ How to guides
    developing.rst
    extending.rst
    redirect_to_login.rst
+   testing.rst
