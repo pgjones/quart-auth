@@ -76,7 +76,7 @@ async def test_auth(app: Quart) -> None:
     serializer = _AuthSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
     token = serializer.dumps("1")
     headers = Headers()
-    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
+    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")  # type: ignore
     async with app.test_request_context("/", headers=headers):
         assert await current_user.is_authenticated
         assert current_user.auth_id == "1"

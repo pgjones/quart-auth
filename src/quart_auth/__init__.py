@@ -67,7 +67,7 @@ class TestClientMixin:
         self.set_cookie(
             _get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
             _get_config_or_default("QUART_AUTH_COOKIE_NAME", self.app),
-            token,
+            token,  # type: ignore
             path=_get_config_or_default("QUART_AUTH_COOKIE_PATH", self.app),
             domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
             secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE", self.app),
@@ -163,7 +163,7 @@ class AuthManager:
             token = serializer.dumps(current_user.auth_id)
             response.set_cookie(
                 _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
-                token,
+                token,  # type: ignore
                 domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
                 max_age=max_age,
                 httponly=_get_config_or_default("QUART_AUTH_COOKIE_HTTP_ONLY"),
