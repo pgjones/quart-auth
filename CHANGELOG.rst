@@ -1,3 +1,8 @@
+0.5.0 2021-05-11
+----------------
+
+* Support authenticating WebSocket connections.
+
 0.4.0 2020-07-14
 ----------------
 
