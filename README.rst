@@ -129,8 +129,8 @@ This README is the best place to start, after that try opening an
 `issue <https://gitlab.com/pgjones/quart-auth/issues>`_.
 
 
-.. |Build Status| image:: https://gitlab.com/pgjones/quart-auth/badges/master/pipeline.svg
-   :target: https://gitlab.com/pgjones/quart-auth/commits/master
+.. |Build Status| image:: https://gitlab.com/pgjones/quart-auth/badges/main/pipeline.svg
+   :target: https://gitlab.com/pgjones/quart-auth/commits/main
 
 .. |docs| image:: https://img.shields.io/badge/docs-passing-brightgreen.svg
    :target: https://pgjones.gitlab.io/quart-auth/
@@ -142,4 +142,4 @@ This README is the best place to start, after that try opening an
    :target: https://pypi.python.org/pypi/Quart-Auth/
 
 .. |license| image:: https://img.shields.io/badge/license-MIT-blue.svg
-   :target: https://gitlab.com/pgjones/quart-auth/blob/master/LICENSE
+   :target: https://gitlab.com/pgjones/quart-auth/blob/main/LICENSE
