@@ -2,6 +2,9 @@
 ----------------
 
 * Support authenticating WebSocket connections.
+* Make testing with logged in users easier via a
+  test_client.authenticated context manager.
+* Ensure wrapped routes are async.
 
 0.4.0 2020-07-14
 ----------------
