@@ -62,7 +62,7 @@ quart = ">=0.15"
 tox = "*"
 
 [tool.pytest.ini_options]
-addopts = "--no-cov-on-fail --showlocals --strict"
+addopts = "--no-cov-on-fail --showlocals --strict-markers"
 testpaths = ["tests"]
 
 [build-system]
