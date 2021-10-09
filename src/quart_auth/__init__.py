@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from enum import auto, Enum
 from functools import wraps
 from hashlib import sha512
+from secrets import compare_digest
 from types import new_class
 from typing import Any, AsyncGenerator, Callable, Dict, Optional
 
@@ -18,11 +19,14 @@ from quart import (
 )
 from quart.globals import _request_ctx_stack, _websocket_ctx_stack
 from quart.typing import TestClientProtocol
+from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
 from werkzeug.local import LocalProxy
 
 QUART_AUTH_USER_ATTRIBUTE = "_quart_auth_user"
 DEFAULTS = {
+    "QUART_AUTH_BASIC_USERNAME": None,
+    "QUART_AUTH_BASIC_PASSWORD": None,
     "QUART_AUTH_COOKIE_DOMAIN": None,
     "QUART_AUTH_COOKIE_NAME": "QUART_AUTH",
     "QUART_AUTH_COOKIE_PATH": "/",
@@ -39,6 +43,13 @@ current_user: "AuthUser" = LocalProxy(lambda: _load_user())  # type: ignore
 
 class Unauthorized(WerkzeugUnauthorized):
     pass
+
+
+class UnauthorizedBasicAuth(WerkzeugUnauthorized):
+    def __init__(self) -> None:
+        www_authenticate = WWWAuthenticate()
+        www_authenticate.set_basic()
+        super().__init__(www_authenticate=www_authenticate)
 
 
 class Action(Enum):
@@ -251,6 +262,57 @@ def logout_user() -> None:
 def renew_login() -> None:
     """Use this to renew the cookie (a new max age)."""
     current_user.action = Action.WRITE_PERMANENT
+
+
+def basic_auth_required(
+    username_key: str = "QUART_AUTH_BASIC_USERNAME",
+    password_key: str = "QUART_AUTH_BASIC_PASSWORD",
+) -> Callable:
+    """A decorator to restrict route access to basic authenticated users.
+
+    This should be used to wrap a route handler (or view function) to
+    enforce that only basic authenticated requests can access it. The
+    basic auth username and password are configurable via the app
+    configuration with the QUART_AUTH_BASIC_USERNAME, and
+    QUART_AUTH_BASIC_PASSWORD keys used by default. Note that it is
+    important that this decorator be wrapped by the route decorator
+    and not vice, versa, as below.
+
+    .. code-block:: python
+
+        @app.route('/')
+        @basic_auth_required()
+        async def index():
+            ...
+
+    If the request is not authenticated a
+    `quart.exceptions.UnauthorizedBasicAuth` exception will be raised.
+
+    """
+
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            if has_request_context():
+                auth = request.authorization
+            elif has_websocket_context():
+                auth = websocket.authorization
+            else:
+                raise RuntimeError("Not used in a valid request/websocket context")
+
+            if (
+                auth is not None
+                and auth.type == "basic"
+                and auth.username == current_app.config[username_key]
+                and compare_digest(auth.password, current_app.config[password_key])
+            ):
+                return await current_app.ensure_async(func)(*args, **kwargs)
+            else:
+                raise UnauthorizedBasicAuth()
+
+        return wrapper
+
+    return decorator
 
 
 def _load_user() -> AuthUser:

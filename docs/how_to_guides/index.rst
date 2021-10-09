@@ -10,3 +10,4 @@ How to guides
    extending.rst
    redirect_to_login.rst
    testing.rst
+   basic_auth.rst

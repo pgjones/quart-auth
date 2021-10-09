@@ -23,3 +23,10 @@ to discourage the use of the user's ID. This makes it easier to revoke
 the quart-auth session, as to do so the ``auth_id`` must be marked as
 invalid which would require disabling the user's account if the user's
 ID was used.
+
+Basic auth configuration usage
+------------------------------
+
+The basic auth decorator can be customised by providing new
+configuration keys, rather than a username and password directly to
+discorage users from writing passwords directly in their code.
