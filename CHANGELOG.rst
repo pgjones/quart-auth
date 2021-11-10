@@ -1,3 +1,9 @@
+0.6.0 2021-11-10
+----------------
+
+* Support Python 3.10
+* Add a basic_auth_required decorator.
+
 0.5.0 2021-05-11
 ----------------
 
