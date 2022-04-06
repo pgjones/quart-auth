@@ -104,11 +104,11 @@ The user (authenticated or not) is available via the global
 Contributing
 ------------
 
-Quart-Auth is developed on `GitLab
-<https://gitlab.com/pgjones/quart-auth>`_. You are very welcome to
-open `issues <https://gitlab.com/pgjones/quart-auth/issues>`_ or
+Quart-Auth is developed on `GitHub
+<https://github.com/pgjones/quart-auth>`_. You are very welcome to
+open `issues <https://github.com/pgjones/quart-auth/issues>`_ or
 propose `merge requests
-<https://gitlab.com/pgjones/quart-auth/merge_requests>`_.
+<https://github.com/pgjones/quart-auth/merge_requests>`_.
 
 Testing
 ~~~~~~~
@@ -125,15 +125,20 @@ this will check the code style and run the tests.
 Help
 ----
 
-This README is the best place to start, after that try opening an
-`issue <https://gitlab.com/pgjones/quart-auth/issues>`_.
+The Quart-Auth `documentation
+<https://quart-auth.readthedocs.io>`_ is the best places to
+start, after that try searching `stack overflow
+<https://stackoverflow.com/questions/tagged/quart>`_ or ask for help
+`on gitter <https://gitter.im/python-quart/lobby>`_. If you still
+can't find an answer please `open an issue
+<https://github.com/pgjones/quart-auth/issues>`_.
 
 
-.. |Build Status| image:: https://gitlab.com/pgjones/quart-auth/badges/main/pipeline.svg
-   :target: https://gitlab.com/pgjones/quart-auth/commits/main
+.. |Build Status| image:: https://github.com/pgjones/quart-auth/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/pgjones/quart-auth/commits/main
 
 .. |docs| image:: https://img.shields.io/badge/docs-passing-brightgreen.svg
-   :target: https://pgjones.gitlab.io/quart-auth/
+   :target: https://quart-auth.readthedocs.io
 
 .. |pypi| image:: https://img.shields.io/pypi/v/quart-auth.svg
    :target: https://pypi.python.org/pypi/Quart-Auth/
@@ -142,4 +147,4 @@ This README is the best place to start, after that try opening an
    :target: https://pypi.python.org/pypi/Quart-Auth/
 
 .. |license| image:: https://img.shields.io/badge/license-MIT-blue.svg
-   :target: https://gitlab.com/pgjones/quart-auth/blob/main/LICENSE
+   :target: https://github.com/pgjones/quart-auth/blob/main/LICENSE

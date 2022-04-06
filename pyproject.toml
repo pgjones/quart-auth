@@ -21,7 +21,7 @@ classifiers = [
 include = ["src/quart_auth/py.typed"]
 license = "MIT"
 readme = "README.rst"
-repository = "https://gitlab.com/pgjones/quart-auth/"
+repository = "https://github.com/pgjones/quart-auth/"
 
 [tool.black]
 line-length = 100

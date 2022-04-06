@@ -7,11 +7,11 @@ Quart-Auth is an extension for `Quart
 authentication (session management). It allows for a session to be
 logged in, authenticated and logged out.
 
-Quart-Auth is developed on `GitLab
-<https://gitlab.com/pgjones/quart-auth>`_. You are very welcome to
-open `issues <https://gitlab.com/pgjones/quart-auth/issues>`_ or
+Quart-Auth is developed on `GitHub
+<https://github.com/pgjones/quart-auth>`_. You are very welcome to
+open `issues <https://github.com/pgjones/quart-auth/issues>`_ or
 propose `merge requests
-<https://gitlab.com/pgjones/quart-auth/merge_requests>`_.
+<https://github.com/pgjones/quart-auth/merge_requests>`_.
 
 
 Contents
