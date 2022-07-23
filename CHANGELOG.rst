@@ -1,3 +1,9 @@
+0.7.0 2022-07-23
+----------------
+
+* Require Quart >= 0.18
+* Switch to GitHub rather than GitLab.
+
 0.6.0 2021-11-10
 ----------------
 
