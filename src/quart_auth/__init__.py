@@ -17,7 +17,7 @@ from quart import (
     Response,
     websocket,
 )
-from quart.globals import _request_ctx_stack, _websocket_ctx_stack
+from quart.globals import request_ctx, websocket_ctx
 from quart.typing import TestClientProtocol
 from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
@@ -244,7 +244,7 @@ def login_user(user: AuthUser, remember: bool = False) -> None:
     else:
         user.action = Action.WRITE
     if has_request_context():
-        setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+        setattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
     else:
         raise RuntimeError("Cannot login unless within a request context")
 
@@ -254,7 +254,7 @@ def logout_user() -> None:
     user = current_app.auth_manager.user_class(None)  # type: ignore
     user.action = Action.DELETE
     if has_request_context():
-        setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+        setattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
     else:
         raise RuntimeError("Cannot logout unless within a request context")
 
@@ -317,22 +317,22 @@ def basic_auth_required(
 
 def _load_user() -> AuthUser:
     if has_request_context():
-        if not hasattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
+        if not hasattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE):
             user = current_app.auth_manager.resolve_user()  # type: ignore
-            setattr(_request_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+            setattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
-            _request_ctx_stack.top,
+            request_ctx,
             QUART_AUTH_USER_ATTRIBUTE,
             current_app.auth_manager.user_class(None),  # type: ignore
         )
     elif has_websocket_context():
-        if not hasattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE):
+        if not hasattr(websocket_ctx, QUART_AUTH_USER_ATTRIBUTE):
             user = current_app.auth_manager.resolve_user()  # type: ignore
-            setattr(_websocket_ctx_stack.top, QUART_AUTH_USER_ATTRIBUTE, user)
+            setattr(websocket_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
-            _websocket_ctx_stack.top,
+            websocket_ctx,
             QUART_AUTH_USER_ATTRIBUTE,
             current_app.auth_manager.user_class(None),  # type: ignore
         )
