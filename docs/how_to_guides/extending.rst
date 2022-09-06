@@ -39,10 +39,40 @@ good example of this is loading user data from a database,
 
     auth_manager.init_app(app)
 
-.. note::
+If you are used to Flask-Login you are likely expecting the current_user
+to be fully loaded without the extra resolve step, you can write
+something like:
 
-    If you are used to Flask-Login you are likely expecting the
-    current_user to be fully loaded without the extra resolve
-    step. This is not possible in Quart-Auth as the ``current_user``
-    is loaded synchronously whereas the User is assumed to be loaded
-    asynchronously.
+.. code-block:: python
+
+    from quart import Quart
+    from quart_auth import AuthUser, AuthManager, current_user, login_required
+
+    class User(AuthUser):
+        def __init__(self, auth_id):
+            super().__init__(auth_id)
+            self.email = None
+            self.name = None
+
+        async def load_user_data(self):
+            user_data = await db.fetch_user_data(self.auth_id)
+
+            self.email = user.data.get("email", None)
+            self.name = user.data.get("name", None)
+
+    auth_manager = AuthManager()
+    auth_manager.user_class = User
+
+    app = Quart(__name__)
+
+    @app.route("/")
+    @login_required
+    async def index():
+        return current_user.email
+
+    auth_manager.init_app(app)
+
+    @app.before_request
+    @app.before_websocket
+    async def load_full_user_data():
+        await current_user.load_user_data()
