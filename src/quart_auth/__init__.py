@@ -110,7 +110,7 @@ class AuthUser:
         return self._auth_id
 
     @property
-    async def is_authenticated(self) -> bool:
+    def is_authenticated(self) -> bool:
         return self._auth_id is not None
 
 
