@@ -219,7 +219,7 @@ def login_required(func: Callable) -> Callable:
 
     @wraps(func)
     async def wrapper(*args: Any, **kwargs: Any) -> Any:
-        if not await current_user.is_authenticated:
+        if not current_user.is_authenticated:
             raise Unauthorized()
         else:
             return await current_app.ensure_async(func)(*args, **kwargs)
