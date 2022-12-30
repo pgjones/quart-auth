@@ -6,6 +6,7 @@ How to guides
    :maxdepth: 1
 
    configuration.rst
+   custom_tokens.rst
    developing.rst
    extending.rst
    redirect_to_login.rst

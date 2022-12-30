@@ -70,11 +70,7 @@ class TestClientMixin:
         if self.cookie_jar is None:
             raise RuntimeError("Authenticated transactions only make sense with cookies enabled.")
 
-        serializer = _AuthSerializer(
-            self.app.secret_key,
-            _get_config_or_default("QUART_AUTH_SALT", self.app),
-        )
-        token = serializer.dumps(auth_id)
+        token = self.app.extensions["QUART_AUTH"].dump_token(auth_id, app=self.app)
         self.set_cookie(
             _get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
             _get_config_or_default("QUART_AUTH_COOKIE_NAME", self.app),
@@ -116,6 +112,7 @@ class AuthUser:
 
 class AuthManager:
     user_class = AuthUser
+    serializer_class = _AuthSerializer
 
     def __init__(self, app: Optional[Quart] = None) -> None:
         if app is not None:
@@ -143,14 +140,30 @@ class AuthManager:
         except KeyError:
             return None
         else:
-            serializer = _AuthSerializer(
-                current_app.secret_key,
-                _get_config_or_default("QUART_AUTH_SALT"),
-            )
-            try:
-                return serializer.loads(token)
-            except BadSignature:
-                return None
+            return self.load_token(token)
+
+    def dump_token(self, auth_id: str, app: Optional[Quart] = None) -> str:
+        if app is None:
+            app = current_app
+
+        serializer = self.serializer_class(
+            app.secret_key,
+            _get_config_or_default("QUART_AUTH_SALT", app),
+        )
+        return serializer.dumps(auth_id)  # type: ignore
+
+    def load_token(self, token: str, app: Optional[Quart] = None) -> Optional[str]:
+        if app is None:
+            app = current_app
+
+        serializer = self.serializer_class(
+            current_app.secret_key,
+            _get_config_or_default("QUART_AUTH_SALT", app),
+        )
+        try:
+            return serializer.loads(token)
+        except BadSignature:
+            return None
 
     def after_request(self, response: Response) -> Response:
         if current_user.action == Action.DELETE:
@@ -167,14 +180,10 @@ class AuthManager:
             if current_user.action == Action.WRITE_PERMANENT:
                 max_age = _get_config_or_default("QUART_AUTH_DURATION")
 
-            serializer = _AuthSerializer(
-                current_app.secret_key,
-                _get_config_or_default("QUART_AUTH_SALT"),
-            )
-            token = serializer.dumps(current_user.auth_id)
+            token = self.dump_token(current_user.auth_id)
             response.set_cookie(
                 _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
-                token,  # type: ignore
+                token,
                 domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN"),
                 max_age=max_age,
                 httponly=_get_config_or_default("QUART_AUTH_COOKIE_HTTP_ONLY"),
