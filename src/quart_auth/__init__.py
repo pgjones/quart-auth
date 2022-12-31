@@ -122,7 +122,7 @@ class AuthManager:
             self.init_app(app)
 
     def init_app(self, app: Quart) -> None:
-        app.auth_manager = self  # type: ignore
+        app.extensions["QUART_AUTH"] = self
         app.after_request(self.after_request)
         app.after_websocket(self.after_websocket)
         app.context_processor(_template_context)
@@ -251,7 +251,7 @@ def login_user(user: AuthUser, remember: bool = False) -> None:
 
 def logout_user() -> None:
     """Use this to end the session of the current_user."""
-    user = current_app.auth_manager.user_class(None)  # type: ignore
+    user = current_app.extensions["QUART_AUTH"].user_class(None)
     user.action = Action.DELETE
     if has_request_context():
         setattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
@@ -318,26 +318,26 @@ def basic_auth_required(
 def _load_user() -> AuthUser:
     if has_request_context():
         if not hasattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE):
-            user = current_app.auth_manager.resolve_user()  # type: ignore
+            user = current_app.extensions["QUART_AUTH"].resolve_user()
             setattr(request_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
             request_ctx,
             QUART_AUTH_USER_ATTRIBUTE,
-            current_app.auth_manager.user_class(None),  # type: ignore
+            current_app.extensions["QUART_AUTH"].user_class(None),
         )
     elif has_websocket_context():
         if not hasattr(websocket_ctx, QUART_AUTH_USER_ATTRIBUTE):
-            user = current_app.auth_manager.resolve_user()  # type: ignore
+            user = current_app.extensions["QUART_AUTH"].resolve_user()
             setattr(websocket_ctx, QUART_AUTH_USER_ATTRIBUTE, user)
 
         return getattr(
             websocket_ctx,
             QUART_AUTH_USER_ATTRIBUTE,
-            current_app.auth_manager.user_class(None),  # type: ignore
+            current_app.extensions["QUART_AUTH"].user_class(None),
         )
     else:
-        return current_app.auth_manager.user_class(None)  # type: ignore
+        return current_app.extensions["QUART_AUTH"].user_class(None)
 
 
 def _get_config_or_default(config_key: str, app: Optional[Quart] = None) -> Any:
