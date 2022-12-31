@@ -10,29 +10,19 @@ is customisable and can be changed via the
 serialization and deserialization methods can be changed to fully
 customise the token usage.
 
-For example to switch to a timed serializer that doesn't accept tokens
-older than a week old the following can be used:
+For example to log when a user attempts to use an expired token the
+following can be used:
 
 .. code-block:: python
-    from datetime import timedelta
 
-    from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-    from quart import current_app
-    from quart_auth import AuthManager
+    import logging
 
-    ONE_WEEK = int(timedelta(days=7).total_seconds())
+    from itsdangerous import BadSignature, SignatureExpired
+    from quart_auth import _get_config_or_default, AuthManager
+
+    log = logging.getLogger(__name__)
 
     class CustomAuthManager(AuthManager):
-        def dump_token(self, auth_id: str, app: Optional[Quart] = None) -> str:
-            if app is None:
-                app = current_app
-
-            serializer = URLSafeTimedSerializer(
-                app.secret_key,
-                _get_config_or_default("QUART_AUTH_SALT", app),
-            )
-            return serializer.dumps(auth_id)  # type: ignore
-
         def load_token(self, token: str, app: Optional[Quart] = None) -> Optional[str]:
             if app is None:
                 app = current_app
@@ -42,9 +32,16 @@ older than a week old the following can be used:
                 _get_config_or_default("QUART_AUTH_SALT", app),
             )
             try:
-                return serializer.loads(token, max_age=ONE_WEEK)
-            except (SignatureExpired, BadSignature):
+                return serializer.loads(
+                    token,
+                    max_age=_get_config_or_default("QUART_AUTH_DURATION", app)
+                )
+            except SignatureExpired:
+                auth_id, _ = serializer.loads_unsafe(
+                    token,
+                    max_age=_get_config_or_default("QUART_AUTH_DURATION", app)
+                )
+                log.warning("An expired token was used with auth_id=%s", auth_id)
                 return None
-
-Note that it is recommended to use the ``QUART_AUTH_DURATION``
-configuration setting rather than this example.
+            except BadSignature:
+                return None

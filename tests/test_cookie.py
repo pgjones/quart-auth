@@ -1,12 +1,10 @@
 import pytest
 from quart import Quart, redirect, render_template_string, ResponseReturnValue, url_for, websocket
-from werkzeug.datastructures import Authorization, Headers
+from werkzeug.datastructures import Headers
 
 from quart_auth import (
-    _AuthSerializer,
     AuthManager,
     AuthUser,
-    basic_auth_required,
     current_user,
     DEFAULTS,
     login_required,
@@ -20,8 +18,6 @@ from quart_auth import (
 @pytest.fixture(name="app")
 def _app() -> Quart:
     app = Quart(__name__)
-    app.config["QUART_AUTH_BASIC_USERNAME"] = "test"
-    app.config["QUART_AUTH_BASIC_PASSWORD"] = "test"
     app.secret_key = "Secret"
 
     @app.route("/")
@@ -59,11 +55,6 @@ def _app() -> Quart:
         logout_user()
         return "logout"
 
-    @app.route("/basic")
-    @basic_auth_required()
-    async def basic_auth() -> ResponseReturnValue:
-        return "Basic"
-
     @app.errorhandler(Unauthorized)
     async def redirect_to_login(*_: Exception) -> ResponseReturnValue:
         return redirect(url_for("login"))
@@ -81,10 +72,10 @@ async def test_no_auth(app: Quart) -> None:
 
 @pytest.mark.asyncio
 async def test_auth(app: Quart) -> None:
-    serializer = _AuthSerializer(app.secret_key, DEFAULTS["QUART_AUTH_SALT"])  # type: ignore
-    token = serializer.dumps("1")
+    test_client = app.test_client()
+    token = test_client.generate_auth_token("1")  # type: ignore
     headers = Headers()
-    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")  # type: ignore
+    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
     async with app.test_request_context("/", headers=headers):
         assert await current_user.is_authenticated
         assert current_user.auth_id == "1"
@@ -161,13 +152,3 @@ async def test_websocket_login(app: Quart) -> None:
     async with test_client.websocket("/ws") as ws:
         await ws.send("Hello")
         assert (await ws.receive()) == "Hello 2"
-
-
-@pytest.mark.asyncio
-async def test_basic_auth(app: Quart) -> None:
-    test_client = app.test_client()
-    response = await test_client.get("/basic")
-    assert response.status_code == 401
-    auth = Authorization("basic", {"username": "test", "password": "test"})
-    response = await test_client.get("/basic", headers={"Authorization": auth.to_header()})
-    assert response.status_code == 200

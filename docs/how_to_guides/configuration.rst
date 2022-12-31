@@ -17,6 +17,7 @@ QUART_AUTH_COOKIE_HTTP_ONLY  bool                    True
 QUART_AUTH_COOKIE_SAMESITE   None | "Strict" | "Lax" "Lax"
 QUART_AUTH_COOKIE_SECURE     bool                    True
 QUART_AUTH_DURATION          int                     365 * 24 * 60 * 60
+QUART_AUTH_MODE              "cookie" | "bearer"     "cookie"
 QUART_AUTH_SALT              str                     "quart auth salt"
 ============================ ======================= ===================
 

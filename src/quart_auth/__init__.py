@@ -7,7 +7,7 @@ from secrets import compare_digest
 from types import new_class
 from typing import Any, AsyncGenerator, Callable, Dict, Optional
 
-from itsdangerous import BadSignature, URLSafeSerializer
+from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
     current_app,
     has_request_context,
@@ -34,6 +34,7 @@ DEFAULTS = {
     "QUART_AUTH_COOKIE_SAMESITE": "Lax",
     "QUART_AUTH_COOKIE_SECURE": True,
     "QUART_AUTH_DURATION": 365 * 24 * 60 * 60,  # 1 Year
+    "QUART_AUTH_MODE": "cookie",  # "bearer" | "cookie"
     "QUART_AUTH_SALT": "quart auth salt",
 }
 
@@ -59,7 +60,7 @@ class Action(Enum):
     WRITE_PERMANENT = auto()
 
 
-class _AuthSerializer(URLSafeSerializer):
+class _AuthSerializer(URLSafeTimedSerializer):
     def __init__(self, secret: str, salt: str) -> None:
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
@@ -67,14 +68,15 @@ class _AuthSerializer(URLSafeSerializer):
 class TestClientMixin:
     @asynccontextmanager
     async def authenticated(self: TestClientProtocol, auth_id: str) -> AsyncGenerator[None, None]:
-        if self.cookie_jar is None:
+        mode = _get_config_or_default("QUART_AUTH_MODE", self.app)
+        if self.cookie_jar is None or mode != "cookie":
             raise RuntimeError("Authenticated transactions only make sense with cookies enabled.")
 
         token = self.app.extensions["QUART_AUTH"].dump_token(auth_id, app=self.app)
         self.set_cookie(
             _get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
             _get_config_or_default("QUART_AUTH_COOKIE_NAME", self.app),
-            token,  # type: ignore
+            token,
             path=_get_config_or_default("QUART_AUTH_COOKIE_PATH", self.app),
             domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
             secure=_get_config_or_default("QUART_AUTH_COOKIE_SECURE", self.app),
@@ -88,6 +90,9 @@ class TestClientMixin:
             path=_get_config_or_default("QUART_AUTH_COOKIE_PATH", self.app),
             domain=_get_config_or_default("QUART_AUTH_COOKIE_DOMAIN", self.app),
         )
+
+    def generate_auth_token(self: TestClientProtocol, auth_id: str) -> str:
+        return self.app.extensions["QUART_AUTH"].dump_token(auth_id, app=self.app)
 
 
 class AuthUser:
@@ -126,7 +131,10 @@ class AuthManager:
         app.test_client_class = new_class("TestClient", (TestClientMixin, app.test_client_class))
 
     def resolve_user(self) -> AuthUser:
-        auth_id = self.load_cookie()
+        if _get_config_or_default("QUART_AUTH_MODE") == "cookie":
+            auth_id = self.load_cookie()
+        else:
+            auth_id = self.load_bearer()
 
         return self.user_class(auth_id)
 
@@ -140,6 +148,20 @@ class AuthManager:
         except KeyError:
             return None
         else:
+            return self.load_token(token)
+
+    def load_bearer(self) -> Optional[str]:
+        try:
+            if has_request_context():
+                raw = request.headers["Authorization"]
+            elif has_websocket_context():
+                raw = websocket.headers["Authorization"]
+        except KeyError:
+            return None
+        else:
+            if raw[:6].lower() != "bearer":
+                return None
+            token = raw[6:].strip()
             return self.load_token(token)
 
     def dump_token(self, auth_id: str, app: Optional[Quart] = None) -> str:
@@ -161,11 +183,17 @@ class AuthManager:
             _get_config_or_default("QUART_AUTH_SALT", app),
         )
         try:
-            return serializer.loads(token)
-        except BadSignature:
+            return serializer.loads(token, max_age=_get_config_or_default("QUART_AUTH_DURATION"))
+        except (BadSignature, SignatureExpired):
             return None
 
     def after_request(self, response: Response) -> Response:
+        if _get_config_or_default("QUART_AUTH_MODE") == "bearer":
+            if current_user.action != Action.PASS:
+                warnings.warn("Login/logout/renew have no affect in bearer mode")
+
+            return response
+
         if current_user.action == Action.DELETE:
             response.delete_cookie(
                 _get_config_or_default("QUART_AUTH_COOKIE_NAME"),
@@ -194,6 +222,12 @@ class AuthManager:
         return response
 
     def after_websocket(self, response: Optional[Response]) -> Optional[Response]:
+        if _get_config_or_default("QUART_AUTH_MODE") == "bearer":
+            if current_user.action != Action.PASS:
+                warnings.warn("Login/logout/renew have no affect in bearer mode")
+
+            return response
+
         if current_user.action != Action.PASS:
             if response is not None:
                 warnings.warn(
