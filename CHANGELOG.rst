@@ -1,3 +1,14 @@
+0.8.0 2023-01-01
+----------------
+
+* Utilise the extensions app attribute. The ``app.auth_manager`` is no
+  longer used, instead use ``app.extensions["QUART_AUTH"]``.
+* Allow the token to be customised if desired.
+* Add a bearer mode to allow for non-cookie based authentication. This
+  change will cause all existing tokens to be invalid, requiring a new
+  login.
+* Support Python 3.11
+
 0.7.0 2022-07-23
 ----------------
 
