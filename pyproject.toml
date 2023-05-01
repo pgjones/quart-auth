@@ -58,7 +58,6 @@ warn_unused_ignores = true
 
 [tool.poetry.dependencies]
 pydata_sphinx_theme = { version = "*", optional = true }
-sphinx = { version = "<6", optional = true }
 python = ">=3.7"
 quart = ">=0.18"
 
@@ -66,7 +65,7 @@ quart = ">=0.18"
 tox = "*"
 
 [tool.poetry.extras]
-docs = ["pydata_sphinx_theme", "sphinx"]
+docs = ["pydata_sphinx_theme"]
 
 [tool.pytest.ini_options]
 addopts = "--no-cov-on-fail --showlocals --strict-markers"
