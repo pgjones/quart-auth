@@ -107,8 +107,8 @@ Contributing
 Quart-Auth is developed on `GitHub
 <https://github.com/pgjones/quart-auth>`_. You are very welcome to
 open `issues <https://github.com/pgjones/quart-auth/issues>`_ or
-propose `merge requests
-<https://github.com/pgjones/quart-auth/merge_requests>`_.
+propose `pull requests
+<https://github.com/pgjones/quart-auth/pulls>`_.
 
 Testing
 ~~~~~~~
