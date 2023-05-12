@@ -57,8 +57,8 @@ something like:
         async def load_user_data(self):
             user_data = await db.fetch_user_data(self.auth_id)
 
-            self.email = user.data.get("email", None)
-            self.name = user.data.get("name", None)
+            self.email = user_data.get("email", None)
+            self.name = user_data.get("name", None)
 
     auth_manager = AuthManager()
     auth_manager.user_class = User
