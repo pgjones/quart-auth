@@ -60,6 +60,7 @@ warn_unused_ignores = true
 pydata_sphinx_theme = { version = "*", optional = true }
 python = ">=3.7"
 quart = ">=0.18"
+typing_extensions = { version = "*", python = "<3.10" }
 
 [tool.poetry.dev-dependencies]
 tox = "*"

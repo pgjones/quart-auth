@@ -1,3 +1,12 @@
+0.9.0 (Unreleased)
+------------------
+
+* Support multiple authentication schemes, whilst supporting a default
+  singleton global. This renames ``AuthManager`` -> ``QuartAuth`` and
+  removes the TestClient ``authenticated`` and ``generate_auth_token``
+  methods - use the ``authenticated_client`` and ``generate_auth_token``
+  functions instead.
+
 0.8.0 2023-01-01
 ----------------
 

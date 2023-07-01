@@ -2,7 +2,7 @@ import pytest
 from quart import Quart, render_template_string, ResponseReturnValue, websocket
 from werkzeug.datastructures import Headers
 
-from quart_auth import AuthManager, current_user, login_required
+from quart_auth import current_user, generate_auth_token, login_required, QuartAuth
 
 
 @pytest.fixture(name="app")
@@ -10,7 +10,7 @@ def _app() -> Quart:
     app = Quart(__name__)
     app.config["QUART_AUTH_MODE"] = "bearer"
     app.secret_key = "Secret"
-    auth_manager = AuthManager(app)
+    auth_manager = QuartAuth(app)
 
     @app.route("/")
     async def index() -> ResponseReturnValue:
@@ -50,7 +50,7 @@ async def test_no_auth(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_auth(app: Quart) -> None:
     test_client = app.test_client()
-    token = test_client.generate_auth_token("1")  # type: ignore
+    token = generate_auth_token(test_client, "1")
     headers = Headers()
     headers.add("Authorization", f"bearer {token}")
     async with app.test_request_context("/", headers=headers):
@@ -61,7 +61,7 @@ async def test_auth(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_templating(app: Quart) -> None:
     test_client = app.test_client()
-    token = test_client.generate_auth_token("1")  # type: ignore
+    token = generate_auth_token(test_client, "1")
     response = await test_client.get("/templating", headers={"Authorization": f"bearer {token}"})
     assert (await response.get_data()) == b"Hello 1"  # type: ignore
 
@@ -72,7 +72,7 @@ async def test_login_required(app: Quart) -> None:
     response = await test_client.get("/auth")
     assert response.status_code == 401
 
-    token = test_client.generate_auth_token("1")  # type: ignore
+    token = generate_auth_token(test_client, "1")
     response = await test_client.get("/auth", headers={"Authorization": f"bearer {token}"})
     assert response.status_code == 200
 
@@ -88,7 +88,7 @@ async def test_login(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_websocket(app: Quart) -> None:
     test_client = app.test_client()
-    token = test_client.generate_auth_token("1")  # type: ignore
+    token = generate_auth_token(test_client, "1")
     async with test_client.websocket("/ws", headers={"Authorization": f"bearer {token}"}) as ws:
         await ws.send("Hello")
         assert (await ws.receive()) == "Hello 1"

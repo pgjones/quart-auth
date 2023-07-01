@@ -15,13 +15,13 @@ in users.
 
     from quart import Quart, render_template_string, websocket
     from quart_auth import (
-        AuthUser, AuthManager, current_user, login_required, login_user, logout_user
+        AuthUser, current_user, login_required, login_user, logout_user, QuartAuth
     )
 
     app = Quart(__name__)
     app.secret_key = "secret key"  # Do not use this key
 
-    AuthManager(app)
+    QuartAuth(app)
 
     @app.route("/login")
     async def login():
@@ -70,14 +70,14 @@ token.
 
     from quart import Quart, render_template_string, websocket
     from quart_auth import (
-        AuthUser, AuthManager, current_user, login_required, login_user, logout_user
+        AuthUser, current_user, login_required, login_user, logout_user, QuartAuth
     )
 
     app = Quart(__name__)
     app.config["QUART_AUTH_MODE"] = "bearer"
     app.secret_key = "secret key"  # Do not use this key
 
-    auth_manager = AuthManager(app)
+    auth_manager = QuartAuth(app)
 
     @app.route("/login")
     async def login():
@@ -124,14 +124,14 @@ requests that have the correct basic auth credentials.
 .. code-block:: python
 
     from quart import Quart
-    from quart_auth import basic_auth_required
+    from quart_auth import basic_auth_required, QuartAuth
 
     app = Quart(__name__)
     app.config["QUART_AUTH_BASIC_USERNAME"] = "user"
     app.config["QUART_AUTH_BASIC_PASSWORD"] = "password"  # Do not use this password
     app.secret_key = "secret key"  # Do not use this key
 
-    AuthManager(app)
+    QuartAuth(app)
 
     @app.route("/")
     @basic_auth_required

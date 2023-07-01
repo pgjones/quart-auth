@@ -30,3 +30,13 @@ Basic auth configuration usage
 The basic auth decorator can be customised by providing new
 configuration keys, rather than a username and password directly to
 discorage users from writing passwords directly in their code.
+
+Singleton usage
+---------------
+
+Quart-Auth 0.9.0 significantly changed the API to allow for multiple
+authentication schemes to be used at once based on ``QuartAuth``
+instances. Despite this global helper functions, including a
+``current_user``, have been keep that expect to use a singleton
+``QuartAuth`` instance. This keeps backwards compatibility, matches
+the common use case, and matches expectations from Flask-Login.

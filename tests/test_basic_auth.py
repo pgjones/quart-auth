@@ -2,7 +2,7 @@ import pytest
 from quart import Quart, ResponseReturnValue, websocket
 from werkzeug.datastructures import Authorization
 
-from quart_auth import AuthManager, basic_auth_required
+from quart_auth import basic_auth_required, QuartAuth
 
 
 @pytest.fixture(name="app")
@@ -27,7 +27,7 @@ def _app() -> Quart:
         data = await websocket.receive()
         await websocket.send(data)
 
-    AuthManager(app)
+    QuartAuth(app)
     return app
 
 

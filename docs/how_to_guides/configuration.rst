@@ -4,22 +4,23 @@ Configuring Quart-Auth
 ======================
 
 The following configuration options are used by Quart-Auth. They
-should be set as part of the standard `Quart configuration
+should be set on initialisation of :class:`~quart.QuartAuth` or as
+part of the standard `Quart configuration
 <https://pgjones.gitlab.io/quart/how_to_guides/configuration.html>`_.
 
-============================ ======================= ===================
-Configuration key            type                    default
----------------------------- ----------------------- -------------------
-QUART_AUTH_COOKIE_DOMAIN     str | None              None
-QUART_AUTH_COOKIE_NAME       str                     "QUART_AUTH"
-QUART_AUTH_COOKIE_PATH       str                     /
-QUART_AUTH_COOKIE_HTTP_ONLY  bool                    True
-QUART_AUTH_COOKIE_SAMESITE   None | "Strict" | "Lax" "Lax"
-QUART_AUTH_COOKIE_SECURE     bool                    True
-QUART_AUTH_DURATION          int                     365 * 24 * 60 * 60
-QUART_AUTH_MODE              "cookie" | "bearer"     "cookie"
-QUART_AUTH_SALT              str                     "quart auth salt"
-============================ ======================= ===================
+================ ============================ ======================= ===================
+Init argument    Configuration key            type                    default
+---------------- ---------------------------- ----------------------- -------------------
+cookie_domain    QUART_AUTH_COOKIE_DOMAIN     str | None              None
+cookie_name      QUART_AUTH_COOKIE_NAME       str                     "QUART_AUTH"
+cookie_path      QUART_AUTH_COOKIE_PATH       str                     /
+cookie_http_only QUART_AUTH_COOKIE_HTTP_ONLY  bool                    True
+cookie_samesite  QUART_AUTH_COOKIE_SAMESITE   None | "Strict" | "Lax" "Lax"
+cookie_secure    QUART_AUTH_COOKIE_SECURE     bool                    True
+duration         QUART_AUTH_DURATION          int                     365 * 24 * 60 * 60
+mode             QUART_AUTH_MODE              "cookie" | "bearer"     "cookie"
+salt             QUART_AUTH_SALT              str                     "quart auth salt"
+================ ============================ ======================= ===================
 
 The ``COOKIE`` related options refer directly to standard cookie
 options. In development it is likely that you'll need to set

@@ -3,13 +3,14 @@ from quart import Quart, redirect, render_template_string, ResponseReturnValue, 
 from werkzeug.datastructures import Headers
 
 from quart_auth import (
-    AuthManager,
+    authenticated_client,
     AuthUser,
     current_user,
-    DEFAULTS,
+    generate_auth_token,
     login_required,
     login_user,
     logout_user,
+    QuartAuth,
     renew_login,
     Unauthorized,
 )
@@ -59,7 +60,7 @@ def _app() -> Quart:
     async def redirect_to_login(*_: Exception) -> ResponseReturnValue:
         return redirect(url_for("login"))
 
-    AuthManager(app)
+    QuartAuth(app)
     return app
 
 
@@ -73,9 +74,9 @@ async def test_no_auth(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_auth(app: Quart) -> None:
     test_client = app.test_client()
-    token = test_client.generate_auth_token("1")  # type: ignore
+    token = generate_auth_token(test_client, "1")
     headers = Headers()
-    headers.add("cookie", f"{DEFAULTS['QUART_AUTH_COOKIE_NAME']}={token}")
+    headers.add("cookie", f"QUART_AUTH={token}")
     async with app.test_request_context("/", headers=headers):
         assert await current_user.is_authenticated
         assert current_user.auth_id == "1"
@@ -84,7 +85,7 @@ async def test_auth(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_testing(app: Quart) -> None:
     test_client = app.test_client()
-    async with test_client.authenticated("22"):  # type: ignore
+    async with authenticated_client(test_client, "22"):
         response = await test_client.get("/templating")
         assert (await response.get_data()) == b"Hello 22"  # type: ignore
     response = await test_client.get("/templating")
@@ -94,7 +95,7 @@ async def test_testing(app: Quart) -> None:
 @pytest.mark.asyncio
 async def test_templating(app: Quart) -> None:
     test_client = app.test_client()
-    async with test_client.authenticated("2"):  # type: ignore
+    async with authenticated_client(test_client, "2"):
         response = await test_client.get("/templating")
         assert (await response.get_data()) == b"Hello 2"  # type: ignore
 
@@ -105,7 +106,7 @@ async def test_login_required(app: Quart) -> None:
     response = await test_client.get("/auth")
     assert response.status_code == 302
 
-    async with test_client.authenticated("1"):  # type: ignore
+    async with authenticated_client(test_client, "1"):
         response = await test_client.get("/auth")
         assert response.status_code == 200
 

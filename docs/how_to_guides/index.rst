@@ -12,3 +12,4 @@ How to guides
    redirect_to_login.rst
    testing.rst
    basic_auth.rst
+   multiple_auth.rst

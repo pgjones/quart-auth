@@ -11,19 +11,19 @@ logged in, authenticated and logged out.
 Usage
 -----
 
-To use Quart-Auth with a Quart app you have to create an AuthManager and
+To use Quart-Auth with a Quart app you have to create an QuartAuth and
 initialise it with the application,
 
 .. code-block:: python
 
     app = Quart(__name__)
-    AuthManager(app)
+    QuartAuth(app)
 
 or via the factory pattern,
 
 .. code-block:: python
 
-    auth_manager = AuthManager()
+    auth_manager = QuartAuth()
 
     def create_app():
         app = Quart(__name__)
@@ -47,7 +47,7 @@ which you can generate via,
 Tou may also need to disable secure cookies to use in development, see
 configuration below.
 
-With AuthManager initialised you can use the ``login_required``
+With QuartAuth initialised you can use the ``login_required``
 function to decorate routes that should only be accessed by
 authenticated users,
 

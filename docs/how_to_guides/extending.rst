@@ -9,7 +9,7 @@ good example of this is loading user data from a database,
 .. code-block:: python
 
     from quart import Quart
-    from quart_auth import AuthUser, AuthManager, current_user, login_required
+    from quart_auth import AuthUser, QuartAuth, current_user, login_required
 
     class User(AuthUser):
         def __init__(self, auth_id):
@@ -27,7 +27,7 @@ good example of this is loading user data from a database,
             await self._resolve()
             return self._email
 
-    auth_manager = AuthManager()
+    auth_manager = QuartAuth()
     auth_manager.user_class = User
 
     app = Quart(__name__)
@@ -46,7 +46,7 @@ something like:
 .. code-block:: python
 
     from quart import Quart
-    from quart_auth import AuthUser, AuthManager, current_user, login_required
+    from quart_auth import AuthUser, QuartAuth, current_user, login_required
 
     class User(AuthUser):
         def __init__(self, auth_id):
@@ -60,7 +60,7 @@ something like:
             self.email = user_data.get("email", None)
             self.name = user_data.get("name", None)
 
-    auth_manager = AuthManager()
+    auth_manager = QuartAuth()
     auth_manager.user_class = User
 
     app = Quart(__name__)
