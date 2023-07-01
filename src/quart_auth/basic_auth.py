@@ -17,8 +17,7 @@ P = ParamSpec("P")
 
 class UnauthorizedBasicAuth(WerkzeugUnauthorized):
     def __init__(self) -> None:
-        www_authenticate = WWWAuthenticate()
-        www_authenticate.set_basic()
+        www_authenticate = WWWAuthenticate("basic")
         super().__init__(www_authenticate=www_authenticate)
 
 
