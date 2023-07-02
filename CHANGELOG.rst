@@ -1,5 +1,5 @@
-0.9.0 (Unreleased)
-------------------
+0.9.0 2023-07-02
+----------------
 
 * Support multiple authentication schemes, whilst supporting a default
   singleton global. This renames ``AuthManager`` -> ``QuartAuth`` and
