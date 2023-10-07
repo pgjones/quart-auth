@@ -148,7 +148,7 @@ class QuartAuth:
             )
 
         app.after_request(self.after_request)
-        app.after_websocket(self.after_websocket)
+        app.after_websocket(self.after_websocket)  # type: ignore
         if self.singleton:
             app.context_processor(self._template_context)
 
@@ -203,7 +203,7 @@ class QuartAuth:
         except (BadSignature, SignatureExpired):
             return None
 
-    def after_request(self, response: Response) -> Response:
+    async def after_request(self, response: Response) -> Response:
         user = self.load_user()
         if self.mode == "bearer":
             if user.action != Action.PASS:
@@ -238,7 +238,7 @@ class QuartAuth:
             )
         return response
 
-    def after_websocket(self, response: Optional[Response]) -> Optional[Response]:
+    async def after_websocket(self, response: Optional[Response]) -> Optional[Response]:
         user = self.load_user()
         if self.mode == "bearer":
             if user.action != Action.PASS:
