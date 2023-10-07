@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from functools import wraps
-from typing import Any, AsyncGenerator, Callable, Coroutine, Optional, TypeVar
+from typing import AsyncGenerator, Awaitable, Callable, Optional, TypeVar
 
 from quart import current_app, Quart
 from quart.typing import TestClientProtocol
@@ -36,7 +36,7 @@ def _find_extension(app: Optional[Quart] = None) -> QuartAuth:
     return extension
 
 
-def login_required(func: Callable[P, T]) -> Callable[P, Coroutine[Any, Any, T]]:
+def login_required(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
     """A decorator to restrict route access to authenticated users.
 
     This should be used to wrap a route handler (or view function) to

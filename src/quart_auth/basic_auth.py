@@ -1,6 +1,6 @@
 from functools import wraps
 from secrets import compare_digest
-from typing import Any, Callable, Coroutine, TypeVar
+from typing import Awaitable, Callable, TypeVar
 
 from quart import current_app, has_request_context, has_websocket_context, request, websocket
 from werkzeug.datastructures import WWWAuthenticate
@@ -24,7 +24,7 @@ class UnauthorizedBasicAuth(WerkzeugUnauthorized):
 def basic_auth_required(
     username_key: str = "QUART_AUTH_BASIC_USERNAME",
     password_key: str = "QUART_AUTH_BASIC_PASSWORD",
-) -> Callable[[Callable[P, T]], Callable[P, Coroutine[Any, Any, T]]]:
+) -> Callable[[Callable[P, Awaitable[T]]], Callable[P, Awaitable[T]]]:
     """A decorator to restrict route access to basic authenticated users.
 
     This should be used to wrap a route handler (or view function) to
@@ -47,7 +47,7 @@ def basic_auth_required(
 
     """
 
-    def decorator(func: Callable[P, T]) -> Callable[P, Coroutine[Any, Any, T]]:
+    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]:
         @wraps(func)
         async def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             if has_request_context():
