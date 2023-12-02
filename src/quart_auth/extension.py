@@ -225,6 +225,12 @@ class QuartAuth:
             if user.action == Action.WRITE_PERMANENT:
                 max_age = self.duration
 
+            if self.cookie_secure and not request.is_secure:
+                warnings.warn("Secure cookies will be ignored on insecure requests")
+
+            if self.cookie_samesite == "Strict" and 300 <= response.status_code < 400:
+                warnings.warn("Strict samesite cookies will be ignored on redirects")
+
             token = self.dump_token(user.auth_id)
             response.set_cookie(
                 self.cookie_name,
