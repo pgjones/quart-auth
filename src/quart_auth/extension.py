@@ -2,7 +2,7 @@ import warnings
 from contextlib import asynccontextmanager
 from enum import auto, Enum
 from hashlib import sha512
-from typing import Any, AsyncGenerator, cast, Dict, Optional, Union
+from typing import Any, AsyncGenerator, cast, Dict, Literal, Optional, Union
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
@@ -46,7 +46,7 @@ class Action(Enum):
 
 
 class _AuthSerializer(URLSafeTimedSerializer):
-    def __init__(self, secret: Union[str, bytes], salt: str) -> None:
+    def __init__(self, secret: Union[str, bytes], salt: Union[str, bytes]) -> None:
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
 
@@ -85,11 +85,11 @@ class QuartAuth:
         cookie_domain: Optional[str] = None,
         cookie_name: Optional[str] = None,
         cookie_path: Optional[str] = None,
-        cookie_http_only: Optional[str] = None,
-        cookie_samesite: Optional[str] = None,
-        cookie_secure: Optional[str] = None,
+        cookie_http_only: Optional[bool] = None,
+        cookie_samesite: Optional[Literal["Strict", "Lax"]] = None,
+        cookie_secure: Optional[bool] = None,
         duration: Optional[int] = None,
-        mode: Optional[str] = None,
+        mode: Optional[Literal["cookie", "bearer"]] = None,
         salt: Optional[str] = None,
         singleton: bool = True,
     ) -> None:
