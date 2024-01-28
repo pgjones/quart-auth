@@ -46,7 +46,7 @@ class Action(Enum):
 
 
 class _AuthSerializer(URLSafeTimedSerializer):
-    def __init__(self, secret: str, salt: str) -> None:
+    def __init__(self, secret: str | bytes, salt: str) -> None:
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
 
