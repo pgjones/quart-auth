@@ -1,3 +1,10 @@
+0.9.1 2024-01-28
+----------------
+
+* Bugfix decorator type hinting.
+* Bugfix after_{request,websocket} function typing.
+* Display some helpful warnings for development usage.
+
 0.9.0 2023-07-02
 ----------------
 
