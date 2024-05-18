@@ -1,3 +1,8 @@
+0.10.1 2024-05-18
+-----------------
+
+* Bugfix don't override a user set user_class or serializer_class.
+
 0.10.0 2024-05-18
 -----------------
 

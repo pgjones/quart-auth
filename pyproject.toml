@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quart-auth"
-version = "0.10.0"
+version = "0.10.1"
 description = "A Quart extension to provide secure cookie authentication"
 authors = ["pgjones <philip.graham.jones@googlemail.com>"]
 classifiers = [
