@@ -1,3 +1,11 @@
+0.10.0 2024-05-18
+-----------------
+
+* Bugfix the Serializer init type hinting
+* Update extention init typing to match docs and code.
+* Allow the user_class and serializer_class to be specified in the
+  constructor.
+
 0.9.1 2024-01-28
 ----------------
 
