@@ -2,7 +2,7 @@ import warnings
 from contextlib import asynccontextmanager
 from enum import auto, Enum
 from hashlib import sha512
-from typing import Any, AsyncGenerator, cast, Dict, Literal, Optional, Union
+from typing import Any, AsyncGenerator, cast, Dict, Literal, Optional, Type, Union
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
@@ -92,6 +92,8 @@ class QuartAuth:
         mode: Optional[Literal["cookie", "bearer"]] = None,
         salt: Optional[str] = None,
         singleton: bool = True,
+        serializer_class: Type[_AuthSerializer] = _AuthSerializer,
+        user_class: Type[AuthUser] = AuthUser,
     ) -> None:
         self.attribute_name = attribute_name
         self.cookie_domain = cookie_domain
@@ -104,6 +106,8 @@ class QuartAuth:
         self.mode = mode
         self.salt = salt
         self.singleton = singleton
+        self.serializer_class = serializer_class
+        self.user_class = user_class
         if app is not None:
             self.init_app(app)
 
