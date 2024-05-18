@@ -92,8 +92,8 @@ class QuartAuth:
         mode: Optional[Literal["cookie", "bearer"]] = None,
         salt: Optional[str] = None,
         singleton: bool = True,
-        serializer_class: Type[_AuthSerializer] = _AuthSerializer,
-        user_class: Type[AuthUser] = AuthUser,
+        serializer_class: Optional[Type[_AuthSerializer]] = None,
+        user_class: Optional[Type[AuthUser]] = None,
     ) -> None:
         self.attribute_name = attribute_name
         self.cookie_domain = cookie_domain
@@ -106,8 +106,10 @@ class QuartAuth:
         self.mode = mode
         self.salt = salt
         self.singleton = singleton
-        self.serializer_class = serializer_class
-        self.user_class = user_class
+        if serializer_class is not None:
+            self.serializer_class = serializer_class
+        if serializer_class is not None:
+            self.user_class = user_class
         if app is not None:
             self.init_app(app)
 
