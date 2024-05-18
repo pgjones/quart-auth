@@ -191,7 +191,7 @@ class QuartAuth:
             app = current_app
 
         serializer = self.serializer_class(app.secret_key, self.salt)
-        return serializer.dumps(auth_id)  # type: ignore
+        return serializer.dumps(auth_id)
 
     def load_token(self, token: str, app: Optional[Quart] = None) -> Optional[str]:
         if app is None:
