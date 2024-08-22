@@ -108,7 +108,7 @@ class QuartAuth:
         self.singleton = singleton
         if serializer_class is not None:
             self.serializer_class = serializer_class
-        if serializer_class is not None:
+        if user_class is not None:
             self.user_class = user_class
         if app is not None:
             self.init_app(app)
