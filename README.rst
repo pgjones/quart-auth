@@ -44,7 +44,7 @@ which you can generate via,
     >>> import secrets
     >>> secrets.token_urlsafe(16)
 
-Tou may also need to disable secure cookies to use in development, see
+You may also need to disable secure cookies to use in development, see
 configuration below.
 
 With QuartAuth initialised you can use the ``login_required``
