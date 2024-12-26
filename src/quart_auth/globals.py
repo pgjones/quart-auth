@@ -11,7 +11,7 @@ from .extension import Action, AuthUser, QuartAuth, Unauthorized
 try:
     from typing import ParamSpec
 except ImportError:
-    from typing_extensions import ParamSpec  # type: ignore
+    from typing_extensions import ParamSpec
 
 T = TypeVar("T")
 P = ParamSpec("P")
