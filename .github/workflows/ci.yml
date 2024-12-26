@@ -25,9 +25,9 @@ jobs:
           - {name: 'package', python: '3.13', tox: package}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v3
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
