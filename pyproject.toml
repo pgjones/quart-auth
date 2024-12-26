@@ -1,6 +1,6 @@
 [project]
 name = "quart-auth"
-version = "0.10.1"
+version = "0.11.0"
 description = "A Quart extension to provide secure cookie authentication"
 authors = [
     {name = "pgjones", email = "philip.graham.jones@googlemail.com"},

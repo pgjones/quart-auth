@@ -1,3 +1,11 @@
+0.11.0 2024-12-26
+-----------------
+
+* Support SECRET_KEY_FALLBACKS when loading tokens to allow for key
+  rotation.
+* Bugfix ensure user_class is used if set in QuartAuth constructor.
+* Support Python 3.13, drop Python 3.8.
+
 0.10.1 2024-05-18
 -----------------
 
