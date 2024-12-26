@@ -2,7 +2,7 @@ import warnings
 from contextlib import asynccontextmanager
 from enum import auto, Enum
 from hashlib import sha512
-from typing import Any, AsyncGenerator, cast, Dict, Literal, Optional, Type, Union
+from typing import Any, AsyncGenerator, cast, Dict, Iterable, Literal, Optional, Type, Union
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
@@ -46,7 +46,9 @@ class Action(Enum):
 
 
 class _AuthSerializer(URLSafeTimedSerializer):
-    def __init__(self, secret: Union[str, bytes], salt: Union[str, bytes]) -> None:
+    def __init__(
+        self, secret: Union[str, bytes, Iterable[str], Iterable[bytes]], salt: Union[str, bytes]
+    ) -> None:
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
 
@@ -203,7 +205,12 @@ class QuartAuth:
         if app is None:
             app = current_app
 
-        serializer = self.serializer_class(app.secret_key, self.salt)
+        keys = [app.secret_key]
+
+        if fallbacks := app.config.get("SECRET_KEY_FALLBACKS"):
+            keys.extend(fallbacks)
+
+        serializer = self.serializer_class(keys, self.salt)  # type: ignore[arg-type]
         try:
             return serializer.loads(token, max_age=self.duration)
         except (BadSignature, SignatureExpired):
