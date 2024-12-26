@@ -1,8 +1,10 @@
-[tool.poetry]
+[project]
 name = "quart-auth"
 version = "0.10.1"
 description = "A Quart extension to provide secure cookie authentication"
-authors = ["pgjones <philip.graham.jones@googlemail.com>"]
+authors = [
+    {name = "pgjones", email = "philip.graham.jones@googlemail.com"},
+]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Web Environment",
@@ -20,9 +22,18 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 include = ["src/quart_auth/py.typed"]
-license = "MIT"
+license = {text = "MIT"}
 readme = "README.rst"
 repository = "https://github.com/pgjones/quart-auth/"
+dependencies = [
+    "quart >= 0.18",
+    "typing_extensions; python_version < '3.10'",
+
+]
+requires-python = ">=3.9"
+
+[project.optional-dependencies]
+docs = ["pydata_sphinx_theme"]
 
 [tool.black]
 line-length = 100
@@ -56,23 +67,11 @@ warn_return_any = false
 warn_unused_configs = true
 warn_unused_ignores = true
 
-[tool.poetry.dependencies]
-pydata_sphinx_theme = { version = "*", optional = true }
-python = ">=3.9"
-quart = ">=0.18"
-typing_extensions = { version = "*", python = "<3.10" }
-
-[tool.poetry.dev-dependencies]
-tox = "*"
-
-[tool.poetry.extras]
-docs = ["pydata_sphinx_theme"]
-
 [tool.pytest.ini_options]
 addopts = "--no-cov-on-fail --showlocals --strict-markers"
 asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
 
 [build-system]
-requires = ["poetry_core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
