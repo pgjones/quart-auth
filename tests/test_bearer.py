@@ -63,7 +63,7 @@ async def test_templating(app: Quart) -> None:
     test_client = app.test_client()
     token = generate_auth_token(test_client, "1")
     response = await test_client.get("/templating", headers={"Authorization": f"bearer {token}"})
-    assert (await response.get_data()) == b"Hello 1"  # type: ignore
+    assert (await response.get_data()) == b"Hello 1"
 
 
 @pytest.mark.asyncio

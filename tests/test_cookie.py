@@ -87,7 +87,7 @@ async def test_testing(app: Quart) -> None:
     test_client = app.test_client()
     async with authenticated_client(test_client, "22"):
         response = await test_client.get("/templating")
-        assert (await response.get_data()) == b"Hello 22"  # type: ignore
+        assert (await response.get_data()) == b"Hello 22"
     response = await test_client.get("/templating")
     assert response.status_code == 302
 
@@ -97,7 +97,7 @@ async def test_templating(app: Quart) -> None:
     test_client = app.test_client()
     async with authenticated_client(test_client, "2"):
         response = await test_client.get("/templating")
-        assert (await response.get_data()) == b"Hello 2"  # type: ignore
+        assert (await response.get_data()) == b"Hello 2"
 
 
 @pytest.mark.asyncio
