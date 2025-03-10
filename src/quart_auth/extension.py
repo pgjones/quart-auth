@@ -205,10 +205,12 @@ class QuartAuth:
         if app is None:
             app = current_app
 
-        keys = [app.secret_key]
+        keys = []
 
         if fallbacks := app.config.get("SECRET_KEY_FALLBACKS"):
             keys.extend(fallbacks)
+
+        keys.append(app.secret_key)  # itsdangerous expects current key at top
 
         serializer = self.serializer_class(keys, self.salt)  # type: ignore[arg-type]
         try:
