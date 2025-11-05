@@ -1,8 +1,9 @@
 import warnings
+from collections.abc import AsyncGenerator, Iterable
 from contextlib import asynccontextmanager
 from enum import auto, Enum
 from hashlib import sha512
-from typing import Any, AsyncGenerator, cast, Dict, Iterable, Literal, Optional, Type, Union
+from typing import Any, Literal
 
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
@@ -47,7 +48,7 @@ class Action(Enum):
 
 class _AuthSerializer(URLSafeTimedSerializer):
     def __init__(
-        self, secret: Union[str, bytes, Iterable[str], Iterable[bytes]], salt: Union[str, bytes]
+        self, secret: str | bytes | Iterable[str] | Iterable[bytes], salt: str | bytes
     ) -> None:
         super().__init__(secret, salt, signer_kwargs={"digest_method": sha512})
 
@@ -59,12 +60,12 @@ class AuthUser:
     inherit from this.
     """
 
-    def __init__(self, auth_id: Optional[str], action: Action = Action.PASS) -> None:
+    def __init__(self, auth_id: str | None, action: Action = Action.PASS) -> None:
         self._auth_id = auth_id
         self.action = action
 
     @property
-    def auth_id(self) -> Optional[str]:
+    def auth_id(self) -> str | None:
         return self._auth_id
 
     @property
@@ -81,21 +82,21 @@ class QuartAuth:
 
     def __init__(
         self,
-        app: Optional[Quart] = None,
+        app: Quart | None = None,
         *,
         attribute_name: str = None,
-        cookie_domain: Optional[str] = None,
-        cookie_name: Optional[str] = None,
-        cookie_path: Optional[str] = None,
-        cookie_http_only: Optional[bool] = None,
-        cookie_samesite: Optional[Literal["Strict", "Lax"]] = None,
-        cookie_secure: Optional[bool] = None,
-        duration: Optional[int] = None,
-        mode: Optional[Literal["cookie", "bearer"]] = None,
-        salt: Optional[str] = None,
+        cookie_domain: str | None = None,
+        cookie_name: str | None = None,
+        cookie_path: str | None = None,
+        cookie_http_only: bool | None = None,
+        cookie_samesite: Literal["Strict", "Lax"] | None = None,
+        cookie_secure: bool | None = None,
+        duration: int | None = None,
+        mode: Literal["cookie", "bearer"] | None = None,
+        salt: str | None = None,
         singleton: bool = True,
-        serializer_class: Optional[Type[_AuthSerializer]] = None,
-        user_class: Optional[Type[AuthUser]] = None,
+        serializer_class: type[_AuthSerializer] | None = None,
+        user_class: type[AuthUser] | None = None,
     ) -> None:
         self.attribute_name = attribute_name
         self.cookie_domain = cookie_domain
@@ -168,7 +169,7 @@ class QuartAuth:
 
         return self.user_class(auth_id)
 
-    def load_cookie(self) -> Optional[str]:
+    def load_cookie(self) -> str | None:
         try:
             token = ""
             if has_request_context():
@@ -180,7 +181,7 @@ class QuartAuth:
         else:
             return self.load_token(token)
 
-    def load_bearer(self) -> Optional[str]:
+    def load_bearer(self) -> str | None:
         try:
             if has_request_context():
                 raw = request.headers["Authorization"]
@@ -194,14 +195,14 @@ class QuartAuth:
             token = raw[6:].strip()
             return self.load_token(token)
 
-    def dump_token(self, auth_id: str, app: Optional[Quart] = None) -> str:
+    def dump_token(self, auth_id: str, app: Quart | None = None) -> str:
         if app is None:
             app = current_app
 
         serializer = self.serializer_class(app.secret_key, self.salt)
         return serializer.dumps(auth_id)
 
-    def load_token(self, token: str, app: Optional[Quart] = None) -> Optional[str]:
+    def load_token(self, token: str, app: Quart | None = None) -> str | None:
         if app is None:
             app = current_app
 
@@ -212,7 +213,7 @@ class QuartAuth:
 
         keys.append(app.secret_key)  # itsdangerous expects current key at top
 
-        serializer = self.serializer_class(keys, self.salt)  # type: ignore[arg-type]
+        serializer = self.serializer_class(keys, self.salt)
         try:
             return serializer.loads(token, max_age=self.duration)
         except (BadSignature, SignatureExpired):
@@ -230,9 +231,9 @@ class QuartAuth:
             response.delete_cookie(
                 self.cookie_name,
                 domain=self.cookie_domain,
-                httponly=cast(bool, self.cookie_http_only),
+                httponly=self.cookie_http_only,
                 path=self.cookie_path,
-                secure=cast(bool, self.cookie_secure),
+                secure=self.cookie_secure,
                 samesite=self.cookie_samesite,
             )
         elif user.action in {Action.WRITE, Action.WRITE_PERMANENT}:
@@ -252,14 +253,14 @@ class QuartAuth:
                 token,
                 domain=self.cookie_domain,
                 max_age=max_age,
-                httponly=cast(bool, self.cookie_http_only),
+                httponly=self.cookie_http_only,
                 path=self.cookie_path,
-                secure=cast(bool, self.cookie_secure),
+                secure=self.cookie_secure,
                 samesite=self.cookie_samesite,
             )
         return response
 
-    async def after_websocket(self, response: Optional[Response]) -> Optional[Response]:
+    async def after_websocket(self, response: Response | None) -> Response | None:
         user = self.load_user()
         if self.mode == "bearer":
             if user.action != Action.PASS:
@@ -330,8 +331,8 @@ class QuartAuth:
             token,
             path=self.cookie_path,
             domain=self.cookie_domain,
-            secure=cast(bool, self.cookie_secure),
-            httponly=cast(bool, self.cookie_http_only),
+            secure=self.cookie_secure,
+            httponly=self.cookie_http_only,
             samesite=self.cookie_samesite,
         )
         yield
@@ -342,7 +343,7 @@ class QuartAuth:
             domain=self.cookie_domain,
         )
 
-    def _template_context(self) -> Dict[str, AuthUser]:
+    def _template_context(self) -> dict[str, AuthUser]:
         return {"current_user": self.load_user()}
 
 

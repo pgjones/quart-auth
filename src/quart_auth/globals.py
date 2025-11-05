@@ -1,17 +1,13 @@
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from functools import wraps
-from typing import AsyncGenerator, Awaitable, Callable, Optional, TypeVar
+from typing import ParamSpec, TypeVar
 
 from quart import current_app, Quart
 from quart.typing import TestClientProtocol
 from werkzeug.local import LocalProxy
 
 from .extension import Action, AuthUser, QuartAuth, Unauthorized
-
-try:
-    from typing import ParamSpec
-except ImportError:
-    from typing_extensions import ParamSpec
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -24,7 +20,7 @@ def _load_user() -> AuthUser:
 current_user: AuthUser = LocalProxy(_load_user)  # type: ignore
 
 
-def _find_extension(app: Optional[Quart] = None) -> QuartAuth:
+def _find_extension(app: Quart | None = None) -> QuartAuth:
     if app is None:
         app = current_app
     extension = next(

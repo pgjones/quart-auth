@@ -1,15 +1,11 @@
+from collections.abc import Awaitable, Callable
 from functools import wraps
 from secrets import compare_digest
-from typing import Awaitable, Callable, TypeVar
+from typing import ParamSpec, TypeVar
 
 from quart import current_app, has_request_context, has_websocket_context, request, websocket
 from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
-
-try:
-    from typing import ParamSpec
-except ImportError:
-    from typing_extensions import ParamSpec
 
 T = TypeVar("T")
 P = ParamSpec("P")
