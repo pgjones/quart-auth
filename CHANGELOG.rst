@@ -1,9 +1,11 @@
-0.11.1 (Unreleased)
--------------------
+0.12.0 2026-08-29
+-----------------
 
 * Flask backport: Fix signing key selection order when key rotation is enabled
   via ``SECRET_KEY_FALLBACKS``.
   <https://github.com/pallets/flask/security/advisories/GHSA-4grg-w6v8-c28g>
+* Switch the user storage from the ``request_ctx/websocket_ctx`` to ``g``.
+* Drop Python 3.9 and support 3.14
 
 0.11.0 2024-12-26
 -----------------
