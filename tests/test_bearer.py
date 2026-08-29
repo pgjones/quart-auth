@@ -35,7 +35,7 @@ def _app() -> Quart:
     @login_required
     async def ws() -> None:
         data = await websocket.receive()
-        await websocket.send(f"{data} {current_user.auth_id}")
+        await websocket.send(f"{data} {current_user.auth_id}")  # type: ignore[str-bytes-safe]
 
     return app
 
