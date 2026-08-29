@@ -8,6 +8,7 @@ from typing import Any, Literal
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
 from quart import (
     current_app,
+    g,
     has_request_context,
     has_websocket_context,
     Quart,
@@ -15,7 +16,6 @@ from quart import (
     Response,
     websocket,
 )
-from quart.globals import request_ctx, websocket_ctx
 from quart.typing import TestClientProtocol
 from werkzeug.exceptions import Unauthorized as WerkzeugUnauthorized
 
@@ -280,23 +280,13 @@ class QuartAuth:
         return response
 
     def load_user(self) -> AuthUser:
-        if has_request_context():
-            if not hasattr(request_ctx, self.attribute_name):
+        if has_request_context() or has_websocket_context():
+            if not hasattr(g, self.attribute_name):
                 user = self.resolve_user()
-                setattr(request_ctx, self.attribute_name, user)
+                setattr(g, self.attribute_name, user)
 
             return getattr(
-                request_ctx,
-                self.attribute_name,
-                self.user_class(None),
-            )
-        elif has_websocket_context():
-            if not hasattr(websocket_ctx, self.attribute_name):
-                user = self.resolve_user()
-                setattr(websocket_ctx, self.attribute_name, user)
-
-            return getattr(
-                websocket_ctx,
+                g,
                 self.attribute_name,
                 self.user_class(None),
             )
@@ -305,7 +295,7 @@ class QuartAuth:
 
     def login_user(self, user: AuthUser) -> None:
         if has_request_context():
-            setattr(request_ctx, self.attribute_name, user)
+            setattr(g, self.attribute_name, user)
         else:
             raise RuntimeError("Cannot login unless within a request context")
 
@@ -313,7 +303,7 @@ class QuartAuth:
         user = self.user_class(None)
         user.action = Action.DELETE
         if has_request_context():
-            setattr(request_ctx, self.attribute_name, user)
+            setattr(g, self.attribute_name, user)
         else:
             raise RuntimeError("Cannot logout unless within a request context")
 
