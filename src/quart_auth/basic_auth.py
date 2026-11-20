@@ -57,7 +57,9 @@ def basic_auth_required(
                 auth is not None
                 and auth.type == "basic"
                 and auth.username == current_app.config[username_key]
-                and compare_digest(auth.password, current_app.config[password_key])
+                and compare_digest(
+                    auth.password.encode(), current_app.config[password_key].encode()
+                )
             ):
                 return await current_app.ensure_async(func)(*args, **kwargs)
             else:

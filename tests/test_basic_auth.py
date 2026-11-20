@@ -56,3 +56,11 @@ async def test_websocket_basic_auth(app: Quart) -> None:
     async with test_client.websocket("/ws", headers={"Authorization": auth.to_header()}) as ws:
         await ws.send("Hello")
         assert (await ws.receive()) == "Hello"
+
+
+@pytest.mark.asyncio
+async def test_basic_auth_non_ascii_password(app: Quart) -> None:
+    test_client = app.test_client()
+    auth = Authorization("basic", {"username": "test", "password": "tést"})
+    response = await test_client.get("/basic", headers={"Authorization": auth.to_header()})
+    assert response.status_code == 401
